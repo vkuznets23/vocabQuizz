@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: vocab-quizz
+
+telegram:
+  bot:
+    token: token
+    username: name

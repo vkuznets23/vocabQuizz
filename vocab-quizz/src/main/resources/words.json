@@ -1,0 +1,22 @@
+[
+    {
+      "word": "meticulous",
+      "correct": "very careful and precise",
+      "options": [
+        "very careful and precise",
+        "very angry",
+        "very old",
+        "very fast"
+      ]
+    },
+    {
+      "word": "abandon",
+      "correct": "to leave something behind",
+      "options": [
+        "to leave something behind",
+        "to repair something",
+        "to create something",
+        "to explain something"
+      ]
+    }
+  ]
