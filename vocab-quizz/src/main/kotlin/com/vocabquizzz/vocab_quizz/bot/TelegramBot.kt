@@ -22,13 +22,8 @@ class TelegramBot(
         return username
     }
 
-    override fun onUpdateReceived(update: Update) {
-        if (update.hasMessage() && update.message.hasText()) {
-            val chatId = update.message.chatId.toString()
-
-            if (update.message.text == "/quiz") {
-
-            // val word = wordRepository.getRandomWord()
+    fun sendQuiz(chatId: String) {
+        try {
             val quiz = wordRepository.getQuiz()
 
             val poll = SendPoll.builder()
@@ -41,6 +36,18 @@ class TelegramBot(
                 .build()
 
             execute(poll)
+        } catch (e: Exception) {
+            println("Failed to send quiz to $chatId: ${e.message}")
+        }
+    }
+
+    override fun onUpdateReceived(update: Update) {
+        if (update.hasMessage() && update.message.hasText()) {
+            val chatId = update.message.chatId.toString()
+
+            if (update.message.text == "/quiz") {
+                println("ChatId = ${update.message.chatId}")
+                sendQuiz(chatId)
             
             } else {
                 execute(

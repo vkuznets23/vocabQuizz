@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
+@EnableScheduling
 class VocabQuizzApplication
 
 fun main(args: Array<String>) {
