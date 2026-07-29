@@ -1,22 +1,39 @@
 [
-    {
-      "word": "meticulous",
-      "correct": "very careful and precise",
-      "options": [
-        "very careful and precise",
-        "very angry",
-        "very old",
-        "very fast"
-      ]
-    },
-    {
-      "word": "abandon",
-      "correct": "to leave something behind",
-      "options": [
-        "to leave something behind",
-        "to repair something",
-        "to create something",
-        "to explain something"
-      ]
-    }
-  ]
+  {
+    "word": "as if",
+    "correct": "used to show disbelief or say that something is impossible"
+  },
+  {
+    "word": "pick apart",
+    "correct": "to analyze or criticize something in great detail"
+  },
+  {
+    "word": "kiki",
+    "correct": "a casual chat or fun gathering with friends"
+  },
+  {
+    "word": "shell of a person",
+    "correct": "someone who has become emotionally or physically exhausted and is no longer like before"
+
+  },
+  {
+    "word": "from the get-go",
+    "correct": "from the very beginning"
+  },
+  {
+    "word": "blindsided",
+    "correct": "surprised or shocked by something unexpected"
+  },
+  {
+    "word": "gab",
+    "correct": "to talk a lot, often casually"
+  },
+  {
+    "word": "dispel",
+    "correct": "to make a doubt, fear, or belief disappear"
+  },
+  {
+    "word": "ramification",
+    "correct": "a possible consequence or result of an action"
+  }
+]

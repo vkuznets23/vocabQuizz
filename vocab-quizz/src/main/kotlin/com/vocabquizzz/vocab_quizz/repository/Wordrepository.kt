@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.repository
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.vocabquizzz.vocab_quizz.model.Word
+import com.vocabquizzz.vocab_quizz.model.Quiz
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Repository
 
@@ -12,6 +13,7 @@ class WordRepository(
 ) {
 
     private val words: List<Word> = loadWords()
+    private var deck: MutableList<Word> = words.shuffled().toMutableList()
 
     private fun loadWords(): List<Word> {
         val resource = ClassPathResource("words.json")
@@ -22,16 +24,20 @@ class WordRepository(
         )
     }
 
-    fun getRandomWord(): Word {
-        return words.random()
-    }
+    fun getQuiz(): Quiz {
+        if (deck.isEmpty()) {
+            deck = words.shuffled().toMutableList()
+        }
+        val word = deck.removeFirst()
 
-    fun getRandomWrongOptions(correct: Word): List<String> {
-        return words
-            .filter { it.word != correct.word }
-            .map { it.options }
-            .flatten()
+        val wrongAnswers = words
+            .filter {it.word != word.word}
             .shuffled()
             .take(3)
+            .map {it.correct}
+
+        val options = (wrongAnswers + word.correct).shuffled()
+
+        return Quiz(word = word.word, correct = word.correct, options = options)
     }
 }

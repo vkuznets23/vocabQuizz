@@ -28,19 +28,21 @@ class TelegramBot(
 
             if (update.message.text == "/quiz") {
 
-val word = wordRepository.getRandomWord()
+            // val word = wordRepository.getRandomWord()
+            val quiz = wordRepository.getQuiz()
 
-val poll = SendPoll.builder()
-    .chatId(chatId)
-    .question("What does '${word.word}' mean?")
-    .options(word.options)
-    .type("quiz")
-    .correctOptionId(word.options.indexOf(word.correct))
-    .isAnonymous(false)
-    .build()
+            val poll = SendPoll.builder()
+                .chatId(chatId)
+                .question("What does '${quiz.word}' mean?")
+                .options(quiz.options)
+                .type("quiz")
+                .correctOptionId(quiz.options.indexOf(quiz.correct))
+                .isAnonymous(false)
+                .build()
 
-execute(poll)
-} else {
+            execute(poll)
+            
+            } else {
                 execute(
                     SendMessage(
                         chatId,

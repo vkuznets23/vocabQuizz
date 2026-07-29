@@ -5,4 +5,4 @@ spring:
 telegram:
   bot:
     token: token
-    username: name
+    username: username
