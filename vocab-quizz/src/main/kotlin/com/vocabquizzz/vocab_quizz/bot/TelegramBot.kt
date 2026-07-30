@@ -28,7 +28,7 @@ class TelegramBot(
 
             val poll = SendPoll.builder()
                 .chatId(chatId)
-                .question("What does '${quiz.word}' mean?")
+                .question(quiz.question)
                 .options(quiz.options)
                 .type("quiz")
                 .correctOptionId(quiz.options.indexOf(quiz.correct))

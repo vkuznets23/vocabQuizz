@@ -1,39 +1,47 @@
 [
   {
     "word": "as if",
-    "correct": "used to show disbelief or say that something is impossible"
+    "definition": "used to show disbelief or say that something is impossible",
+    "example": "_____ I'd believe that story!"
   },
   {
     "word": "pick apart",
-    "correct": "to analyze or criticize something in great detail"
+    "definition": "to analyze or criticize something in great detail",
+    "example": "The professor ______ every argument in my essay."
   },
   {
     "word": "kiki",
-    "correct": "a casual chat or fun gathering with friends"
+    "definition": "a casual chat or fun gathering with friends",
+    "example": "Let's have a little _____ over coffee this weekend."
   },
   {
     "word": "shell of a person",
-    "correct": "someone who has become emotionally or physically exhausted and is no longer like before"
-
+    "definition": "someone who has become emotionally or physically exhausted and is no longer like before",
+    "example": "After working nonstop for months, he was just a _____."
   },
   {
     "word": "from the get-go",
-    "correct": "from the very beginning"
+    "definition": "from the very beginning",
+    "example": "I knew _____ that this project would be challenging."
   },
   {
     "word": "blindsided",
-    "correct": "surprised or shocked by something unexpected"
+    "definition": "surprised or shocked by something unexpected",
+    "example": "She was completely _____ by the company's decision."
   },
   {
     "word": "gab",
-    "correct": "to talk a lot, often casually"
+    "definition": "to talk a lot, often casually",
+    "example": "We spent the whole evening _____ about our vacation plans."
   },
   {
     "word": "dispel",
-    "correct": "to make a doubt, fear, or belief disappear"
+    "definition": "to make a doubt, fear, or belief disappear",
+    "example": "The doctor reassured me and _____ my fears."
   },
   {
     "word": "ramification",
-    "correct": "a possible consequence or result of an action"
+    "definition": "a possible consequence or result of an action",
+    "example": "You should think about the legal _____ before signing the contract."
   }
 ]

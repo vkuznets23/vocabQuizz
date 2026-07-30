@@ -4,8 +4,8 @@ spring:
 
 telegram:
   bot:
-    token: token
-    username: name
+    token:
+    username:
 
 quiz:
   cron: "0 */10 * * * *"
