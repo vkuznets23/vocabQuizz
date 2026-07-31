@@ -57,7 +57,7 @@ class WordRepository(
         }
         val word = deck.removeFirst()
 
-        return if (Random.nextInt(100) < 30) {
+        return if (Random.nextInt(100) < 20) {
             definitionQuiz(word)
         }else {
             sentenceQuiz(word)

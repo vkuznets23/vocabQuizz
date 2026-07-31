@@ -11,6 +11,6 @@ class QuizScheduler(
 
     @Scheduled(cron = "\${quiz.cron}")
     fun sendQuiz() {
-        telegramBot.sendQuiz("410458864")
+        telegramBot.startLesson("410458864")
     }
 }

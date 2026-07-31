@@ -17,6 +17,13 @@ class TelegramBot(
 
     private val wordRepository: WordRepository
 ) : TelegramLongPollingBot(token) {
+    data class QuizSession(
+        var remaining: Int,
+        var score: Int
+    )
+
+    private val sessions = mutableMapOf<String, QuizSession>()
+    private val activePolls = mutableMapOf<String, String>()
 
     override fun getBotUsername(): String {
         return username
@@ -35,10 +42,20 @@ class TelegramBot(
                 .isAnonymous(false)
                 .build()
 
-            execute(poll)
+            val message = execute(poll)
+            activePolls[message.poll.id] = chatId
         } catch (e: Exception) {
             println("Failed to send quiz to $chatId: ${e.message}")
         }
+    }
+
+    fun startLesson(chatId: String) {
+        sessions[chatId] = QuizSession(
+            remaining = 5,
+            score = 0
+        )
+
+        sendQuiz(chatId)
     }
 
     override fun onUpdateReceived(update: Update) {
@@ -46,9 +63,17 @@ class TelegramBot(
             val chatId = update.message.chatId.toString()
 
             if (update.message.text == "/quiz") {
-                println("ChatId = ${update.message.chatId}")
-                sendQuiz(chatId)
-            
+                if (sessions.containsKey(chatId)) {
+                    execute(
+                        SendMessage(
+                            chatId,
+                            "You're already taking a quiz 😊"
+                        )
+                    )
+                    return
+                }
+
+                startLesson(chatId)
             } else {
                 execute(
                     SendMessage(
@@ -57,6 +82,32 @@ class TelegramBot(
                     )
                 )
             }
+        }
+        if (update.hasPollAnswer()) {
+            val pollId = update.pollAnswer.pollId
+
+            val chatId = activePolls.remove(pollId)
+
+            if (chatId != null) {
+            val session = sessions[chatId]
+
+            if (session != null) {
+                session.remaining--
+
+                if (session.remaining > 0) {
+                    sendQuiz(chatId)
+                } else {
+                    execute(
+                        SendMessage(
+                            chatId,
+                            "🎉 Quiz finished!"
+                        )
+                    )
+
+                    sessions.remove(chatId)
+                }
+            }
+        }
         }
     }
 }
