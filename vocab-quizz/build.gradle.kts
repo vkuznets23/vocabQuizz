@@ -23,13 +23,14 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-json")
 
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    implementation("org.telegram:telegrambots-spring-boot-starter:6.9.7.1")
-	implementation("org.telegram:telegrambots:6.9.7.1")
+	implementation("org.telegram:telegrambots-springboot-longpolling-starter:9.0.0")
+	implementation("org.telegram:telegrambots-client:9.0.0")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 }
 
 kotlin {
