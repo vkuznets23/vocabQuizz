@@ -14,6 +14,9 @@ The main idea:
 - one user can have many words;
 - each word belongs to exactly one user.
 
+<img width="685" height="304" alt="image" src="https://github.com/user-attachments/assets/ada4574f-a975-4069-848a-7a3407506814" />
+
+
 # Tables
 
 ## users
