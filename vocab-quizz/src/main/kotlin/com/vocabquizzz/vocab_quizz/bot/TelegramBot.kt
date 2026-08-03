@@ -1,12 +1,14 @@
 package com.vocabquizzz.vocab_quizz.bot
 
-import org.telegram.telegrambots.meta.api.methods.polls.SendPoll
-import com.vocabquizzz.vocab_quizz.repository.WordRepository
+import com.vocabquizzz.vocab_quizz.service.LessonService
+import com.vocabquizzz.vocab_quizz.service.QuizService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.methods.polls.SendPoll
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
+
 @Component
 class TelegramBot(
     @Value("\${telegram.bot.token}")
@@ -15,99 +17,100 @@ class TelegramBot(
     @Value("\${telegram.bot.username}")
     private val username: String,
 
-    private val wordRepository: WordRepository
+    private val quizService: QuizService,
+    private val lessonService: LessonService
 ) : TelegramLongPollingBot(token) {
-    data class QuizSession(
-        var remaining: Int,
-        var score: Int
-    )
 
-    private val sessions = mutableMapOf<String, QuizSession>()
-    private val activePolls = mutableMapOf<String, String>()
-
-    override fun getBotUsername(): String {
-        return username
-    }
-
-    fun sendQuiz(chatId: String) {
-        try {
-            val quiz = wordRepository.getQuiz()
-
-            val poll = SendPoll.builder()
-                .chatId(chatId)
-                .question(quiz.question)
-                .options(quiz.options)
-                .type("quiz")
-                .correctOptionId(quiz.options.indexOf(quiz.correct))
-                .isAnonymous(false)
-                .build()
-
-            val message = execute(poll)
-            activePolls[message.poll.id] = chatId
-        } catch (e: Exception) {
-            println("Failed to send quiz to $chatId: ${e.message}")
-        }
-    }
-
-    fun startLesson(chatId: String) {
-        sessions[chatId] = QuizSession(
-            remaining = 5,
-            score = 0
-        )
-
-        sendQuiz(chatId)
-    }
+    override fun getBotUsername() = username
 
     override fun onUpdateReceived(update: Update) {
+
         if (update.hasMessage() && update.message.hasText()) {
+
             val chatId = update.message.chatId.toString()
 
-            if (update.message.text == "/quiz") {
-                if (sessions.containsKey(chatId)) {
-                    execute(
-                        SendMessage(
-                            chatId,
-                            "You're already taking a quiz 😊"
-                        )
-                    )
-                    return
-                }
+            when (update.message.text) {
 
-                startLesson(chatId)
-            } else {
-                execute(
+                "/quiz" -> startLesson(chatId)
+
+                else -> execute(
                     SendMessage(
                         chatId,
-                        "Vocab Quizz Bot 📚\nTry /quiz"
+                        "📚 Vocab Quiz Bot\nTry /quiz"
                     )
                 )
             }
         }
+
         if (update.hasPollAnswer()) {
-            val pollId = update.pollAnswer.pollId
 
-            val chatId = activePolls.remove(pollId)
+            val pollAnswer = update.pollAnswer
 
-            if (chatId != null) {
-            val session = sessions[chatId]
+            val activePoll = lessonService.finishPoll(pollAnswer.pollId)
+                ?: return
 
-            if (session != null) {
-                session.remaining--
+            val chosenOption = pollAnswer.optionIds.first()
 
-                if (session.remaining > 0) {
-                    sendQuiz(chatId)
-                } else {
-                    execute(
-                        SendMessage(
-                            chatId,
-                            "🎉 Quiz finished!"
-                        )
+            val hasNext = lessonService.answer(
+                chatId = activePoll.chatId,
+                correct = chosenOption == activePoll.correctOption
+            )
+
+            if (hasNext) {
+                sendQuiz(activePoll.chatId)
+            } else {
+
+                val session = lessonService.finishLesson(activePoll.chatId)
+
+                execute(
+                    SendMessage(
+                        activePoll.chatId,
+                        "🎉 Quiz finished!\n" +
+                                "Score: ${session?.score}/5"
                     )
-
-                    sessions.remove(chatId)
-                }
+                )
             }
         }
+    }
+
+    fun startLesson(chatId: String) {
+
+        if (!lessonService.startLesson(chatId)) {
+
+            execute(
+                SendMessage(
+                    chatId,
+                    "You're already taking a quiz 😊"
+                )
+            )
+
+            return
         }
+
+        sendQuiz(chatId)
+    }
+
+    private fun sendQuiz(chatId: String) {
+
+        val quiz = quizService.getQuiz()
+
+        val correctOption = quiz.options.indexOf(quiz.correct)
+
+        val poll = SendPoll.builder()
+            .chatId(chatId)
+            .question(quiz.question)
+            .options(quiz.options)
+            .type("quiz")
+            .correctOptionId(correctOption)
+            .isAnonymous(false)
+            .build()
+
+        val message = execute(poll)
+
+        lessonService.registerPoll(
+            pollId = message.poll.id,
+            chatId = chatId,
+            correctOption = correctOption
+        )
     }
 }
