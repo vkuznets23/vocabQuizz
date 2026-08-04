@@ -1,6 +1,10 @@
 spring:
   application:
     name: vocab-quizz
+  datasource:
+    url: jdbc:postgresql://postgres:5432/vocab_quiz
+    username: postgres
+    password: postgres
 
 telegram:
   bot:
