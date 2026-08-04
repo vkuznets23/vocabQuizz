@@ -1,6 +1,7 @@
 package com.vocabquizzz.vocab_quizz.service
 
 import com.vocabquizzz.vocab_quizz.gateway.TelegramGateway
+import com.vocabquizzz.vocab_quizz.service.UserService
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
@@ -9,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 class BotService(
     private val lessonService: LessonService,
     private val quizService: QuizService,
+    private val userService: UserService,
     private val telegramGateway: TelegramGateway
 ) {
 
@@ -44,7 +46,8 @@ class BotService(
 
     private fun sendQuiz(chatId: String) {
 
-        val quiz = quizService.getQuiz()
+        val user = userService.getOrCreate(chatId.toLong())
+        val quiz = quizService.getQuiz(user)
 
         val pollId = telegramGateway.sendQuiz(
             chatId,

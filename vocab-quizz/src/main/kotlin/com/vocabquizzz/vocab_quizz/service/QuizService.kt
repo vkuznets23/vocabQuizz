@@ -3,34 +3,42 @@ package com.vocabquizzz.vocab_quizz.service
 import com.vocabquizzz.vocab_quizz.model.Quiz
 import org.springframework.stereotype.Service
 import kotlin.random.Random
-import com.vocabquizzz.vocab_quizz.model.Word
+import com.vocabquizzz.vocab_quizz.entity.Word
+import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.repository.WordRepository
 
 
 
 @Service
 class QuizService(
-    private val wordRepository: WordRepository
-) {
-    private val words = wordRepository.getAllWords()
-    private var deck = words.shuffled().toMutableList()
+    private val wordRepository: WordRepository,
 
-    fun getQuiz(): Quiz {
-        if (deck.isEmpty()) {
-            deck = words.shuffled().toMutableList()
+) {
+    private val decks = mutableMapOf<Long, MutableList<Word>>()
+    fun getQuiz(user: User): Quiz {
+        var deck = decks[user.id]
+
+        if (deck == null || deck.isEmpty()) {
+
+            deck = wordRepository.findAllByUser(user)
+                .shuffled()
+                .toMutableList()
+
+            decks[user.id] = deck
         }
+
         val word = deck.removeFirst()
 
-        return if (Random.nextInt(100) < 20) {
+        return if (Random.nextInt(100) < 20)
             definitionQuiz(word)
-        }else {
+        else
             sentenceQuiz(word)
-        }
     }
 
     private fun definitionQuiz(word: Word): Quiz {
-        val wrong = words
-            .filter { it.word != word.word }
+        val wrong = wordRepository
+            .findAllByUser(word.user)
+            .filter { it.id != word.id }
             .shuffled()
             .take(3)
             .map { it.definition }
@@ -45,13 +53,19 @@ class QuizService(
     }
 
     private fun sentenceQuiz(word: Word): Quiz {
-        val wrong = words
-            .filter { it.word != word.word }
+        val wrong = wordRepository
+            .findAllByUser(word.user)
+            .filter { it.id != word.id }
             .shuffled()
             .take(3)
             .map { it.word }
 
         val options = (wrong + word.word).shuffled()
-        return Quiz(question = word.example, options = options, correct = word.word)
+
+        return Quiz(
+            question = word.example ?: "",
+            options = options,
+            correct = word.word
+        )
     }
 }

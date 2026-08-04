@@ -37,6 +37,7 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.springframework.boot:spring-boot-starter-jdbc")
 	runtimeOnly("org.postgresql:postgresql")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 }
 
 kotlin {
