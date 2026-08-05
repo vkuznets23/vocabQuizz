@@ -29,8 +29,6 @@ class TelegramBot(
 
     override fun consume(update: Update) {
 
-        println("Telegram update received")
-
         if (update.hasMessage() && update.message.hasText()) {
             botService.handleMessage(update.message)
         }

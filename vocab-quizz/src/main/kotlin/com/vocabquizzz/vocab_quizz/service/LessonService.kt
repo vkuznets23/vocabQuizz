@@ -53,8 +53,4 @@ class LessonService {
     fun finishLesson(chatId: String): QuizSession? {
         return sessions.remove(chatId)
     }
-
-    fun isLessonRunning(chatId: String): Boolean {
-        return sessions.containsKey(chatId)
-    }
 }

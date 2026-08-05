@@ -15,11 +15,11 @@ class QuizService(
 
 ) {
     private val decks = mutableMapOf<Long, MutableList<Word>>()
+
     fun getQuiz(user: User): Quiz {
         var deck = decks[user.id]
 
         if (deck == null || deck.isEmpty()) {
-
             deck = wordRepository.findAllByUser(user)
                 .shuffled()
                 .toMutableList()
