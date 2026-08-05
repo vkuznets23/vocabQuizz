@@ -1,35 +1,66 @@
 ```
+                                    Telegram
+                                        │
+                                        ▼
+                                TelegramBot (Adapter)
+                                        │
+                                        ▼
+                                  BotDispatcher (Router)
+                           ┌────────────┴────────────┐
+                           │                         │
+                           ▼                         ▼
+                        Message                   PollAnswer
+                           │                         │
+                           └────────────┬────────────┘
+                                        ▼
+                                   QuizHandler
+                              ┌─────────┼──────────┬────────────┐
+                              ▼         ▼          ▼            ▼
+                       LessonService UserService QuizService TelegramGateway
+                                        │          │
+                                        ▼          ▼
+                                   UserRepository WordRepository
+                                   │               │
+                                   └───────┬───────┘
+                                           ▼
+                                        Database
+```
+
+```
 Telegram
     │
     ▼
-TelegramBot.consume()
+TelegramBot
     │
     ▼
-BotService
+BotDispatcher
     │
     ├──────────────────────────────────────────┐
     │                                          │
     ▼                                          ▼
-handleMessage()                         handlePollAnswer()
+dispatch(Message)                    dispatch(PollAnswer)
     │                                          │
     ▼                                          ▼
-startLesson()                     lessonService.finishPoll()
+QuizHandler.handle(message)         QuizHandler.handle(answer)
     │                                          │
     ▼                                          ▼
-lessonService.startLesson()          lessonService.answer()
+startLesson()                    lessonService.finishPoll()
     │                                          │
     ▼                                          ▼
-sendQuiz()                             hasNext ?
-    │                                 ┌────┴─────┐
-    ▼                                 │          │
-userService.getOrCreate()             ▼          ▼
-    │                             sendQuiz()  finishLesson()
-    ▼                                 │          │
-quizService.getQuiz()                 │          ▼
-    │                                 │   lessonService.finishLesson()
-    ▼                                 │          │
-telegramGateway.sendQuiz()            │          ▼
-    │                                 │ telegramGateway.sendText()
-    ▼                                 │
-lessonService.registerPoll()◄─────────┘
+lessonService.startLesson()         lessonService.answer()
+    │                                          │
+    ▼                                          ▼
+sendQuiz()                                 hasNext ?
+    │                                    ┌─────┴──────┐
+    ▼                                    │            │
+userService.getOrCreate()                ▼            ▼
+    │                               sendQuiz()  finishLesson()
+    ▼                                    │            │
+quizService.getQuiz()                    │            ▼
+    │                                    │   lessonService.finishLesson()
+    ▼                                    │            │
+telegramGateway.sendQuiz()               │            ▼
+    │                                    │ telegramGateway.sendText()
+    ▼                                    │
+lessonService.registerPoll() ◄───────────┘
 ```

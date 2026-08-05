@@ -1,36 +1,28 @@
-package com.vocabquizzz.vocab_quizz.service
+package com.vocabquizzz.vocab_quizz.bot.handler
 
 import com.vocabquizzz.vocab_quizz.gateway.TelegramGateway
 import com.vocabquizzz.vocab_quizz.service.UserService
+import com.vocabquizzz.vocab_quizz.service.QuizService
+import com.vocabquizzz.vocab_quizz.service.LessonService
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 
 @Service
-class BotService(
+class QuizHandler(
     private val lessonService: LessonService,
     private val quizService: QuizService,
     private val userService: UserService,
     private val telegramGateway: TelegramGateway
 ) {
 
-    fun handleMessage(message: Message) {
+    fun handleQuiz(message: Message) {
 
         val chatId = message.chatId.toString()
-
-        when (message.text) {
-
-            "/quiz" -> startLesson(chatId)
-
-            else -> telegramGateway.sendText(
-                chatId,
-                "📚 Vocab Quiz Bot\nTry /quiz"
-            )
-        }
+        startLesson(chatId)
     }
 
-    fun startLesson(chatId: String) {
-
+    fun startLesson(chatId: String){
         if (!lessonService.startLesson(chatId)) {
 
             telegramGateway.sendText(
@@ -61,7 +53,18 @@ class BotService(
         )
     }
 
-    fun handlePollAnswer(answer: PollAnswer) {
+    private fun finishLesson(chatId: String) {
+
+        val session = lessonService.finishLesson(chatId)
+
+        telegramGateway.sendText(
+            chatId,
+            "🎉 Quiz finished!\nScore: ${session?.score}/5"
+        )
+    }
+
+
+    fun handlePoll(answer: PollAnswer) {
 
         val activePoll =
             lessonService.finishPoll(answer.pollId)
@@ -81,13 +84,4 @@ class BotService(
         }
     }
 
-    private fun finishLesson(chatId: String) {
-
-        val session = lessonService.finishLesson(chatId)
-
-        telegramGateway.sendText(
-            chatId,
-            "🎉 Quiz finished!\nScore: ${session?.score}/5"
-        )
-    }
 }

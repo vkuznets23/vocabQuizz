@@ -18,4 +18,25 @@ class WordService(
 
     fun randomWord(user: User): Word =
         wordRepository.findAllByUser(user).random()
+
+    fun addWord(
+        user: User,
+        word: String,
+        definition: String,
+        example: String?
+    ): Word {
+
+        if (wordRepository.existsByUserAndWord(user, word)) {
+            throw IllegalArgumentException("Word already exists")
+        }
+
+        val newWord = Word(
+            user = user,
+            word = word,
+            definition = definition,
+            example = example
+        )
+
+        return wordRepository.save(newWord)
+    }
 }

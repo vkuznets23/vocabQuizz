@@ -8,7 +8,14 @@ import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.repository.WordRepository
 
 
-
+/**
+ * Generates quiz questions from a user's vocabulary.
+ *
+ * Maintains a shuffled in-memory deck for each user so that words are
+ * presented in random order without repetition until the deck is exhausted.
+ * Each generated quiz is either a definition question or a sentence question.
+ */
+ 
 @Service
 class QuizService(
     private val wordRepository: WordRepository,
@@ -29,7 +36,7 @@ class QuizService(
 
         val word = deck.removeFirst()
 
-        return if (Random.nextInt(100) < 20)
+        return if (word.example == null || Random.nextInt(100) < 20)
             definitionQuiz(word)
         else
             sentenceQuiz(word)

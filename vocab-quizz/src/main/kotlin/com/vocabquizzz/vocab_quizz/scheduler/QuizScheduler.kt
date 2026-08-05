@@ -1,16 +1,16 @@
 package com.vocabquizzz.vocab_quizz.scheduler
 
-import com.vocabquizzz.vocab_quizz.service.BotService
+import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 @Service
 class QuizScheduler(
-    private val botService: BotService
+    private val quizHandler: QuizHandler
 ) {
 
     @Scheduled(cron = "\${quiz.cron}")
     fun sendQuiz() {
-        botService.startLesson("410458864")
+        quizHandler.startLesson("410458864")
     }
 }

@@ -3,6 +3,15 @@ package com.vocabquizzz.vocab_quizz.service
 import com.vocabquizzz.vocab_quizz.model.QuizSession
 import org.springframework.stereotype.Service
 
+
+/**
+ * Manages the lifecycle of a user's quiz session.
+ *
+ * Tracks active quiz sessions, keeps the current score and remaining questions,
+ * and stores active Telegram polls so answers can be matched to the correct user
+ * when Telegram sends a PollAnswer update.
+ */
+ 
 @Service
 class LessonService {
     data class ActivePoll(
