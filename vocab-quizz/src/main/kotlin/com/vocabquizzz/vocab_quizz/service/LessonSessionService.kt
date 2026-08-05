@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
  */
  
 @Service
-class LessonService {
+class LessonSessionService {
     data class ActivePoll(
         val chatId: String,
         val correctOption: Int

@@ -1,16 +1,16 @@
 package com.vocabquizzz.vocab_quizz.bot.handler
 
-import com.vocabquizzz.vocab_quizz.gateway.TelegramGateway
+import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import com.vocabquizzz.vocab_quizz.service.UserService
 import com.vocabquizzz.vocab_quizz.service.QuizService
-import com.vocabquizzz.vocab_quizz.service.LessonService
+import com.vocabquizzz.vocab_quizz.service.LessonSessionService
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 
 @Service
 class QuizHandler(
-    private val lessonService: LessonService,
+    private val lessonService: LessonSessionService,
     private val quizService: QuizService,
     private val userService: UserService,
     private val telegramGateway: TelegramGateway

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component
 import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.AddWordHandler
 import com.vocabquizzz.vocab_quizz.service.AddWordSessionService
-import com.vocabquizzz.vocab_quizz.gateway.TelegramGateway
+import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 
@@ -24,10 +24,9 @@ class BotDispatcher(
                 quizHandler.handleQuiz(message)
             
             "/add" -> 
-                addWordHandler.handle(message)
+                addWordHandler.start(message)
             
             else -> {
-
                 val chatId = message.chatId.toString()
 
                 if (addWordSessionService.isRunning(chatId)) {

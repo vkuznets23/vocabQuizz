@@ -1,7 +1,7 @@
 package com.vocabquizzz.vocab_quizz.bot.handler
 
 import com.vocabquizzz.vocab_quizz.model.AddWordStep.*
-import com.vocabquizzz.vocab_quizz.gateway.TelegramGateway
+import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import com.vocabquizzz.vocab_quizz.service.AddWordSessionService
 import com.vocabquizzz.vocab_quizz.service.WordService
 import com.vocabquizzz.vocab_quizz.service.UserService
@@ -16,15 +16,14 @@ class AddWordHandler(
     private val telegramGateway: TelegramGateway
 
 ) {
-    private fun start(chatId: String) {
+    fun start(message: Message) {
+        val chatId = message.chatId.toString()
 
         if (!sessionService.start(chatId)) {
-
             telegramGateway.sendText(
                 chatId,
                 "You're already adding a word 😊"
             )
-
             return
         }
 
@@ -36,12 +35,7 @@ class AddWordHandler(
 
     fun handle(message: Message) {
         val chatId = message.chatId.toString()
-        val session = sessionService.get(chatId)
-
-        if (session == null) {
-            start(chatId)
-            return
-        }
+        val session = sessionService.get(chatId) ?: return
 
         when (session.step) {
 

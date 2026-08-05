@@ -1,4 +1,4 @@
-package com.vocabquizzz.vocab_quizz.gateway
+package com.vocabquizzz.vocab_quizz.bot.gateway
 
 import com.vocabquizzz.vocab_quizz.model.Quiz
 import org.springframework.stereotype.Component
