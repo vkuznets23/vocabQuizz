@@ -16,12 +16,12 @@ class Word(
     val user: User = User(),
 
     @Column(nullable = false)
-    val word: String = "",
+    var word: String = "",
 
     @Column(nullable = false)
-    val definition: String = "",
+    var definition: String = "",
 
-    val example: String? = null,
+    var example: String? = null,
 
     @Column(name = "created_at", insertable = false, updatable = false)
     val createdAt: LocalDateTime? = null

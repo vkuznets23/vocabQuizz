@@ -30,8 +30,6 @@ class DeleteWordHandler(
 
         val user = userService.getOrCreate(chatId.toLong())
         val deleted = wordService.deleteWord(user, word)
-        println("Deleted: $deleted")
-
 
         telegramGateway.sendText(
             chatId,

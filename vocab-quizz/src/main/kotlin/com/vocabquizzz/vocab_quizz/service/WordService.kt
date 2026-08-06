@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.service
 import org.springframework.stereotype.Service
 import com.vocabquizzz.vocab_quizz.entity.Word
 import com.vocabquizzz.vocab_quizz.entity.User
+import com.vocabquizzz.vocab_quizz.model.EditableField
 import com.vocabquizzz.vocab_quizz.repository.WordRepository
 import com.vocabquizzz.vocab_quizz.repository.UserRepository
 import org.springframework.transaction.annotation.Transactional
@@ -46,5 +47,27 @@ class WordService(
         word: String
     ): Boolean {
         return wordRepository.deleteByUserAndWord(user, word) > 0
+    }
+
+    fun getWord(
+        user:User,
+        word: String
+    ): Word? {
+        return wordRepository.findByUserAndWord(user, word)
+    }
+
+    @Transactional
+    fun updateWord(
+        id: Long,
+        field: EditableField,
+        value: String?
+    ) {
+        val word = wordRepository.findById(id).orElseThrow()
+
+        when (field) {
+            EditableField.WORD -> word.word = value!!
+            EditableField.DEFINITION -> word.definition = value!!
+            EditableField.EXAMPLE -> word.example = value
+        }
     }
 }

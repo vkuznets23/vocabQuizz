@@ -4,7 +4,9 @@ import org.springframework.stereotype.Component
 import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.AddWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.DeleteWordHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.EditWordHandler
 import com.vocabquizzz.vocab_quizz.service.AddWordSessionService
+import com.vocabquizzz.vocab_quizz.service.EditWordSessionService
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
@@ -14,8 +16,10 @@ class BotDispatcher(
     private val quizHandler: QuizHandler,
     private val telegramGateway: TelegramGateway,
     private val addWordSessionService: AddWordSessionService,
+    private val editWordSessionService: EditWordSessionService,
     private val addWordHandler: AddWordHandler,
     private val deleteWordHandler: DeleteWordHandler,
+    private val editWordHandler: EditWordHandler,
 
 ) {
     fun dispatch(message: Message) {
@@ -27,6 +31,9 @@ class BotDispatcher(
             
             "/add" -> 
                 addWordHandler.start(message)
+
+            "/edit" ->
+                editWordHandler.start(message)
             
             "/delete" ->
                 deleteWordHandler.handle(message)
@@ -36,6 +43,8 @@ class BotDispatcher(
 
                 if (addWordSessionService.isRunning(chatId)) {
                     addWordHandler.handle(message)
+                } else if (editWordSessionService.isRunning(chatId)) {
+                    editWordHandler.handle(message)
                 } else {
                     telegramGateway.sendText(
                         chatId,

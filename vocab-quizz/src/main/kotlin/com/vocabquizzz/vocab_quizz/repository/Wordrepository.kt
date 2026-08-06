@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface WordRepository : JpaRepository<Word, Long> {
     fun findAllByUser(user: User): List<Word>
+    fun findByUserAndWord(user: User, word: String): Word?
     fun existsByUserAndWord(user: User, word: String): Boolean
     fun deleteByUserAndWord(user: User, word: String): Long
 }

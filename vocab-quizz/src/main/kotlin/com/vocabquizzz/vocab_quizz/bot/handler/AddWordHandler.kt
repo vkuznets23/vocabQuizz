@@ -19,6 +19,18 @@ class AddWordHandler(
     fun start(message: Message) {
         val chatId = message.chatId.toString()
 
+        val word = message.text
+            ?.substringAfter("/add")
+            ?.trim()
+
+        if (word.isNullOrBlank()) {
+            telegramGateway.sendText(
+                chatId,
+                "Usage: /add <word>"
+            )
+            return
+        }
+
         if (!sessionService.start(chatId)) {
             telegramGateway.sendText(
                 chatId,
@@ -27,10 +39,14 @@ class AddWordHandler(
             return
         }
 
+        val session = sessionService.get(chatId) ?: return
+
+        session.word = word
         telegramGateway.sendText(
             chatId,
-            "Enter the word:"
+            "Enter the definition:"
         )
+
     }
 
     fun handle(message: Message) {
@@ -38,16 +54,6 @@ class AddWordHandler(
         val session = sessionService.get(chatId) ?: return
 
         when (session.step) {
-
-            WORD -> {
-                session.word = message.text
-                session.step = DEFINITION
-
-                telegramGateway.sendText(
-                    chatId,
-                    "Enter the definition:"
-                )
-            }
 
             DEFINITION -> {
                 session.definition = message.text
@@ -66,21 +72,15 @@ class AddWordHandler(
 
                 val user = userService.getOrCreate(chatId.toLong())
 
-                println(session)
-
                 try {
                     wordService.addWord(
-                    user = user,
-                    word = session.word!!,
-                    definition = session.definition!!,
-                    example = session.example)
-
+                        user = user, word = session.word!!, definition = session.definition!!, example = session.example
+                    )
                     telegramGateway.sendText(chatId, "✅ Word added!")
                 } catch (e: IllegalArgumentException) {
-                    telegramGateway.sendText(
-                        chatId,
-                        "You already have this word."
-                    )
+                    telegramGateway.sendText(chatId, "You already have this word.")
+                } finally {
+                    sessionService.finish(chatId)
                 }
 
                 sessionService.finish(chatId)
