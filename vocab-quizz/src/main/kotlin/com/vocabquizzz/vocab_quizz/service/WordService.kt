@@ -13,7 +13,7 @@ class WordService(
     private val wordRepository: WordRepository,
     private val userRepository: UserRepository
 ){
-
+    
     fun getAllWords(user: User): List<Word> =
         wordRepository.findAllByUser(user)
 

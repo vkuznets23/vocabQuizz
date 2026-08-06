@@ -1,6 +1,8 @@
 package com.vocabquizzz.vocab_quizz.bot
 
 import org.springframework.stereotype.Component
+import com.vocabquizzz.vocab_quizz.bot.handler.HelpHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.AllWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.AddWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.DeleteWordHandler
@@ -13,6 +15,8 @@ import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 
 @Component
 class BotDispatcher(
+    private val helpHandler: HelpHandler,
+    private val allWordsHandler: AllWordHandler,
     private val quizHandler: QuizHandler,
     private val telegramGateway: TelegramGateway,
     private val addWordSessionService: AddWordSessionService,
@@ -25,6 +29,12 @@ class BotDispatcher(
     fun dispatch(message: Message) {
 
         when (message.text?.substringBefore(" ")) {
+
+            "/help" ->
+                helpHandler.handle(message)
+
+            "/words" ->
+                allWordsHandler.handle(message)
 
             "/quiz" ->
                 quizHandler.handleQuiz(message)
