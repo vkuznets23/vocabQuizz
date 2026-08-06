@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.bot
 import org.springframework.stereotype.Component
 import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.AddWordHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.DeleteWordHandler
 import com.vocabquizzz.vocab_quizz.service.AddWordSessionService
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import org.telegram.telegrambots.meta.api.objects.message.Message
@@ -13,7 +14,8 @@ class BotDispatcher(
     private val quizHandler: QuizHandler,
     private val telegramGateway: TelegramGateway,
     private val addWordSessionService: AddWordSessionService,
-    private val addWordHandler: AddWordHandler
+    private val addWordHandler: AddWordHandler,
+    private val deleteWordHandler: DeleteWordHandler,
 
 ) {
     fun dispatch(message: Message) {
@@ -25,6 +27,9 @@ class BotDispatcher(
             
             "/add" -> 
                 addWordHandler.start(message)
+            
+            "/delete" ->
+                deleteWordHandler.handle(message)
             
             else -> {
                 val chatId = message.chatId.toString()

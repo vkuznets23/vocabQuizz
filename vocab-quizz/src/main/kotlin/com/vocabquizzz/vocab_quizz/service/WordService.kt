@@ -5,7 +5,7 @@ import com.vocabquizzz.vocab_quizz.entity.Word
 import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.repository.WordRepository
 import com.vocabquizzz.vocab_quizz.repository.UserRepository
-
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class WordService(
@@ -38,5 +38,13 @@ class WordService(
         )
 
         return wordRepository.save(newWord)
+    }
+
+    @Transactional
+    fun deleteWord(
+        user: User,
+        word: String
+    ): Boolean {
+        return wordRepository.deleteByUserAndWord(user, word) > 0
     }
 }
