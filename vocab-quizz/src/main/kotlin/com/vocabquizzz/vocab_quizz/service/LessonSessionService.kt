@@ -59,6 +59,10 @@ class LessonSessionService {
         return session.remaining > 0
     }
 
+    fun isRunning(chatId: String): Boolean {
+        return sessions.containsKey(chatId)
+    }
+
     fun finishLesson(chatId: String): QuizSession? {
         return sessions.remove(chatId)
     }

@@ -2,10 +2,12 @@ package com.vocabquizzz.vocab_quizz.bot
 
 import org.springframework.stereotype.Component
 import com.vocabquizzz.vocab_quizz.bot.handler.HelpHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.GetWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.AllWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.AddWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.DeleteWordHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.CancelSessionHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.EditWordHandler
 import com.vocabquizzz.vocab_quizz.service.AddWordSessionService
 import com.vocabquizzz.vocab_quizz.service.EditWordSessionService
@@ -17,12 +19,14 @@ import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 class BotDispatcher(
     private val helpHandler: HelpHandler,
     private val allWordsHandler: AllWordHandler,
+    private val getWordHandler: GetWordHandler,
     private val quizHandler: QuizHandler,
     private val telegramGateway: TelegramGateway,
     private val addWordSessionService: AddWordSessionService,
     private val editWordSessionService: EditWordSessionService,
     private val addWordHandler: AddWordHandler,
     private val deleteWordHandler: DeleteWordHandler,
+    private val cancelSessionHandler: CancelSessionHandler,
     private val editWordHandler: EditWordHandler,
 
 ) {
@@ -35,6 +39,9 @@ class BotDispatcher(
 
             "/words" ->
                 allWordsHandler.handle(message)
+            
+            "/word" ->
+                getWordHandler.handle(message)
 
             "/quiz" ->
                 quizHandler.handleQuiz(message)
@@ -47,6 +54,9 @@ class BotDispatcher(
             
             "/delete" ->
                 deleteWordHandler.handle(message)
+            
+            "/cancel" ->
+                cancelSessionHandler.handle(message)
             
             else -> {
                 val chatId = message.chatId.toString()

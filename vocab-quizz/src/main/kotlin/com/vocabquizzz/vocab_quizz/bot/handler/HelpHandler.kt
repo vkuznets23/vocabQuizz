@@ -38,6 +38,12 @@ class HelpHandler(
             📚 /words
             Show all the words you've added to your vocabulary.
 
+            📖 /word <word>
+            Show information about a word: definition and example.
+
+            ❌ /cancel
+            Cancel the current operation (adding, editing, or quiz).
+
             💡 Tip:
             Use /help anytime to see this list again.
             """.trimIndent()
