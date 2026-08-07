@@ -2,6 +2,7 @@ package com.vocabquizzz.vocab_quizz.bot
 
 import org.springframework.stereotype.Component
 import com.vocabquizzz.vocab_quizz.bot.handler.HelpHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.WordListCallbackHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.GetWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.AllWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
@@ -14,6 +15,8 @@ import com.vocabquizzz.vocab_quizz.service.EditWordSessionService
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
+
 
 @Component
 class BotDispatcher(
@@ -28,6 +31,7 @@ class BotDispatcher(
     private val deleteWordHandler: DeleteWordHandler,
     private val cancelSessionHandler: CancelSessionHandler,
     private val editWordHandler: EditWordHandler,
+    private val wordListCallbackHandler: WordListCallbackHandler,
 
 ) {
     fun dispatch(message: Message) {
@@ -77,5 +81,13 @@ class BotDispatcher(
 
     fun dispatch(answer: PollAnswer) {
         quizHandler.handlePoll(answer)
+    }
+
+    fun dispatch(callback: CallbackQuery) {
+
+        when {
+            callback.data.startsWith("words:") ->
+                wordListCallbackHandler.handle(callback)
+        }
     }
 }

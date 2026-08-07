@@ -1,4 +1,4 @@
-package com.vocabquizzz.vocab_quizz.scheduler
+package com.vocabquizzz.vocab_quizz.bot.scheduler
 
 import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
 import org.springframework.scheduling.annotation.Scheduled

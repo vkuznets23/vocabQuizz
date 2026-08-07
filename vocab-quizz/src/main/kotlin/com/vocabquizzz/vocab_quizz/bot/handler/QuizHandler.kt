@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 
 @Service
 class QuizHandler(
-    private val lessonService: LessonSessionService,
+    private val lessonSessionService: LessonSessionService,
     private val quizService: QuizService,
     private val wordService: WordService,
     private val userService: UserService,
@@ -35,7 +35,7 @@ class QuizHandler(
     }
 
     fun startLesson(chatId: String){
-        if (!lessonService.startLesson(chatId)) {
+        if (!lessonSessionService.startLesson(chatId)) {
 
             telegramGateway.sendText(
                 chatId,
@@ -58,7 +58,7 @@ class QuizHandler(
             quiz
         )
 
-        lessonService.registerPoll(
+        lessonSessionService.registerPoll(
             pollId = pollId,
             chatId = chatId,
             correctOption = quiz.options.indexOf(quiz.correct)
@@ -67,7 +67,7 @@ class QuizHandler(
 
     private fun finishLesson(chatId: String) {
 
-        val session = lessonService.finishLesson(chatId)
+        val session = lessonSessionService.finishLesson(chatId)
 
         telegramGateway.sendText(
             chatId,
@@ -79,12 +79,12 @@ class QuizHandler(
     fun handlePoll(answer: PollAnswer) {
 
         val activePoll =
-            lessonService.finishPoll(answer.pollId)
+            lessonSessionService.finishPoll(answer.pollId)
                 ?: return
 
         val selectedOption = answer.optionIds.first()
 
-        val hasNext = lessonService.answer(
+        val hasNext = lessonSessionService.answer(
             chatId = activePoll.chatId,
             correct = selectedOption == activePoll.correctOption
         )

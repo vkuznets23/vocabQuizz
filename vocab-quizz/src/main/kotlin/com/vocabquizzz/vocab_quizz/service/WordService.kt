@@ -5,14 +5,24 @@ import com.vocabquizzz.vocab_quizz.entity.Word
 import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.model.EditableField
 import com.vocabquizzz.vocab_quizz.repository.WordRepository
-import com.vocabquizzz.vocab_quizz.repository.UserRepository
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+
 
 @Service
 class WordService(
-    private val wordRepository: WordRepository,
-    private val userRepository: UserRepository
+    private val wordRepository: WordRepository
 ){
+
+    private val wordsPerPage = 20
+
+    fun getWords(user: User, page: Int): Page<Word> {
+        return wordRepository.findAllByUser(
+            user,
+            PageRequest.of(page, wordsPerPage)
+        )
+    }
     
     fun getAllWords(user: User): List<Word> =
         wordRepository.findAllByUser(user)
