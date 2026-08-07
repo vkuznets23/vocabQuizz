@@ -56,6 +56,9 @@ class WordService(
         return wordRepository.findByUserAndWord(user, word)
     }
 
+    fun countWords(user: User): Long =
+        wordRepository.countByUser(user)
+
     @Transactional
     fun updateWord(
         id: Long,

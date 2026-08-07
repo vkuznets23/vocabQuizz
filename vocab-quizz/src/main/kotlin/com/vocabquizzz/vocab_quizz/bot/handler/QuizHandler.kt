@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.bot.handler
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import com.vocabquizzz.vocab_quizz.service.UserService
 import com.vocabquizzz.vocab_quizz.service.QuizService
+import com.vocabquizzz.vocab_quizz.service.WordService
 import com.vocabquizzz.vocab_quizz.service.LessonSessionService
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.message.Message
@@ -12,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 class QuizHandler(
     private val lessonService: LessonSessionService,
     private val quizService: QuizService,
+    private val wordService: WordService,
     private val userService: UserService,
     private val telegramGateway: TelegramGateway
 ) {
@@ -19,6 +21,16 @@ class QuizHandler(
     fun handleQuiz(message: Message) {
 
         val chatId = message.chatId.toString()
+        val user = userService.getOrCreate(chatId.toLong())
+
+        if (wordService.countWords(user) < 4) {
+            telegramGateway.sendText(
+                chatId,
+                "You need at least 4 words before starting a quiz."
+            )
+            return
+        }
+
         startLesson(chatId)
     }
 
