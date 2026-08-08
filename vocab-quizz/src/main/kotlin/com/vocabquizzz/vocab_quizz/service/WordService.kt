@@ -17,6 +17,12 @@ class WordService(
 
     private val wordsPerPage = 20
 
+    fun searchWords(
+        user: User,
+        query: String
+    ): List<Word> =
+        wordRepository.findTop5ByUserAndWordContainingIgnoreCase(user, query)
+
     fun getWords(user: User, page: Int): Page<Word> {
         return wordRepository.findAllByUser(
             user,
@@ -36,6 +42,26 @@ class WordService(
         definition: String,
         example: String?
     ): Word {
+
+        val normalizedWord = word.trim()
+        val normalizedDefinition = definition.trim()
+        val normalizedExample = example?.trim()
+
+        require(normalizedWord.isNotBlank()) {
+            "Word cannot be empty."
+        }
+
+        require(normalizedDefinition.isNotBlank()) {
+            "Definition cannot be empty."
+        }
+
+        require(word.length <= 100) {
+            "Word cannot be longer than 100 characters."
+        }
+
+        require(definition.length <= 1000) {
+            "Definition cannot be longer than 1000 characters."
+        }
 
         if (wordRepository.existsByUserAndWord(user, word)) {
             throw IllegalArgumentException("Word already exists")

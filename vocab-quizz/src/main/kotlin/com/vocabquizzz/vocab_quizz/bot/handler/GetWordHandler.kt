@@ -16,11 +16,11 @@ class GetWordHandler(
     fun handle(message: Message) {
         val chatId = message.chatId.toString()
 
-        val wordText = message.text
+        val query = message.text
             ?.substringAfter("/word")
             ?.trim()
 
-        if (wordText.isNullOrBlank()) {
+        if (query.isNullOrBlank()) {
             telegramGateway.sendText(
                 chatId,
                 "Usage: /word <word>"
@@ -29,26 +29,49 @@ class GetWordHandler(
         }
 
         val user = userService.getOrCreate(chatId.toLong())
-        val word = wordService.getWord(user, wordText)
+        val exact = wordService.getWord(user, query)
 
-        if (word == null) {
+        if (exact == null) {
+            val suggestions =
+                wordService.searchWords(user, query)
+
+            if (suggestions.isEmpty()) {
+                telegramGateway.sendText(
+                    chatId,
+                    "❌ Word '$query' not found."
+                )
+                return
+            }
+
+            val text = buildString {
+                appendLine("❌ Word '$query' not found.")
+                appendLine()
+                appendLine("Did you mean:")
+                appendLine()
+
+                suggestions.forEach {
+                    appendLine("• ${it.word}")
+                }
+            }
+
             telegramGateway.sendText(
                 chatId,
-                "❌ Word '$wordText' not found."
+                text
             )
+
             return
         }
 
         telegramGateway.sendText(
             chatId,
             """
-            📖 ${word.word}
+            📖 ${exact.word}
 
             📚 Definition:
-            ${word.definition}
+            ${exact.definition}
 
             💬 Example:
-            ${word.example ?: "-"}
+            ${exact.example ?: "-"}
             """.trimIndent()
         )
     }

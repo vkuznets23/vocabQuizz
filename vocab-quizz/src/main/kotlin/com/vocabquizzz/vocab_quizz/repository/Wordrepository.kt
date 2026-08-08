@@ -13,6 +13,10 @@ interface WordRepository : JpaRepository<Word, Long> {
         user: User,
         pageable: Pageable
     ): Page<Word>
+    fun findTop5ByUserAndWordContainingIgnoreCase(
+        user: User,
+        query: String
+    ): List<Word>
     fun findByUserAndWord(user: User, word: String): Word?
     fun existsByUserAndWord(user: User, word: String): Boolean
     fun deleteByUserAndWord(user: User, word: String): Long
