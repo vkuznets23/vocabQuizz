@@ -76,11 +76,12 @@ class EditWordHandler(
 
     fun handle(message: Message) {
         val chatId = message.chatId.toString()
+        val user = userService.getOrCreate(chatId.toLong())
         val session = sessionService.get(chatId) ?: return
 
         when (session.step) {
             SELECT_FIELD -> {
-                when (message.text?.lowercase()) {
+                when (message.text?.trim()?.lowercase()) {
                     "1", "word" -> {
                         session.field = EditableField.WORD
                         session.step = ENTER_VALUE
@@ -126,20 +127,30 @@ class EditWordHandler(
                             session.field == EditableField.EXAMPLE &&
                             message.text == "/skip"
                         ) null
-                        else message.text
+                        else message.text.trim()
 
-                    wordService.updateWord(
-                        id = session.wordId!!,
-                        field = session.field!!,
-                        value = value
-                    )
+                    
+                    try {
+                        wordService.updateWord(
+                            user = user,
+                            wordId = session.wordId!!,
+                            field = session.field!!,
+                            value = value
+                        )
 
-                    sessionService.finish(chatId)
+                        sessionService.finish(chatId)
 
-                    telegramGateway.sendText(
-                        chatId,
-                        "✅ Word updated!"
-                    )
+                        telegramGateway.sendText(
+                            chatId,
+                            "✅ Word updated!"
+                        )
+                    } catch (e: IllegalArgumentException) {
+                        telegramGateway.sendText(
+                            chatId,
+                            "❌ ${e.message}"
+                        )
+                    }
+
                 }
             }
         }

@@ -97,16 +97,60 @@ class WordService(
 
     @Transactional
     fun updateWord(
-        id: Long,
+        user: User,
+        wordId: Long,
         field: EditableField,
         value: String?
     ) {
-        val word = wordRepository.findById(id).orElseThrow()
+        val word = wordRepository.findByIdAndUser(wordId, user)
+            ?: throw IllegalArgumentException("Word not found")
 
         when (field) {
-            EditableField.WORD -> word.word = value!!
-            EditableField.DEFINITION -> word.definition = value!!
-            EditableField.EXAMPLE -> word.example = value
+
+            EditableField.WORD -> {
+                val newWord = value?.trim()
+
+                require(!newWord.isNullOrBlank()) {
+                    "Word cannot be empty."
+                }
+
+                require(newWord.length <= 100) {
+                    "Word cannot be longer than 100 characters."
+                }
+
+                if (
+                    wordRepository.existsByUserAndWord(user, newWord) &&
+                    !word.word.equals(newWord, ignoreCase = true)
+                ) {
+                    throw IllegalArgumentException("Word already exists.")
+                }
+
+                word.word = newWord
+            }
+
+            EditableField.DEFINITION -> {
+                val newDefinition = value?.trim()
+
+                require(!newDefinition.isNullOrBlank()) {
+                    "Definition cannot be empty."
+                }
+
+                require(newDefinition.length <= 1000) {
+                    "Definition cannot be longer than 1000 characters."
+                }
+
+                word.definition = newDefinition
+            }
+
+            EditableField.EXAMPLE -> {
+                val newExample = value?.trim()
+
+                require(newExample == null || newExample.length <= 2000) {
+                    "Example cannot be longer than 2000 characters."
+                }
+
+                word.example = newExample
+            }
         }
     }
 }
