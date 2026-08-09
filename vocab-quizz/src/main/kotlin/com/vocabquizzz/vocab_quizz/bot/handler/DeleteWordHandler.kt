@@ -6,21 +6,15 @@ import com.vocabquizzz.vocab_quizz.service.WordService
 import com.vocabquizzz.vocab_quizz.service.UserService
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import com.vocabquizzz.vocab_quizz.model.WordLookupResult
-import com.vocabquizzz.vocab_quizz.entity.Word
+import com.vocabquizzz.vocab_quizz.bot.formatter.WordLookupFormatter
 
 @Component
 class DeleteWordHandler(
     private val wordService: WordService,
     private val userService: UserService,
-    private val telegramGateway: TelegramGateway
-
+    private val telegramGateway: TelegramGateway,
+    private val wordLookupFormatter: WordLookupFormatter
 ) {
-    private fun formatSuggestions(query: String, words: List<Word>) = buildString {
-        appendLine("❌ Word '$query' not found.")
-        appendLine()
-        appendLine("Did you mean:")
-        words.forEach { appendLine("• ${it.word}") }
-    }
 
     fun handle(message: Message) {
         val chatId = message.chatId.toString()
@@ -33,9 +27,9 @@ class DeleteWordHandler(
         if (query.isNullOrBlank()) {
             telegramGateway.sendText(
                 chatId,
-                "Usage: /delete <word>"
+                wordLookupFormatter.formatUsage("/delete <word>")
             )
-            return
+            return 
         }
 
         when (val result = wordService.lookupWord(user, query)) {
@@ -44,9 +38,9 @@ class DeleteWordHandler(
                 telegramGateway.sendText(chatId, "✅ '${result.word.word}' deleted.")
             }
             is WordLookupResult.Suggestions ->
-                telegramGateway.sendText(chatId, formatSuggestions(result.query, result.words))
+                telegramGateway.sendText(chatId, wordLookupFormatter.formatSuggestions(result.query, result.words))
             WordLookupResult.NotFound ->
-                telegramGateway.sendText(chatId, "❌ Word '$query' not found.")
+                telegramGateway.sendText(chatId, wordLookupFormatter.formatNotFound(query))
         }
     }
 }

@@ -7,13 +7,15 @@ import com.vocabquizzz.vocab_quizz.service.AddWordSessionService
 import com.vocabquizzz.vocab_quizz.service.WordService
 import com.vocabquizzz.vocab_quizz.service.UserService
 import org.telegram.telegrambots.meta.api.objects.message.Message
+import com.vocabquizzz.vocab_quizz.bot.formatter.WordLookupFormatter
 
 @Component
 class AddWordHandler(
     private val sessionService: AddWordSessionService,
     private val wordService: WordService,
-    private val userService: UserService,
-    private val telegramGateway: TelegramGateway
+    private val userService: UserService,   
+    private val telegramGateway: TelegramGateway,
+    private val wordLookupFormatter: WordLookupFormatter
 
 ) {
     private fun sendValidationError(chatId: String, block: () -> Unit) {
@@ -36,7 +38,7 @@ class AddWordHandler(
         if (word.isNullOrBlank()) {
             telegramGateway.sendText(
                 chatId,
-                "Usage: /add <word>"
+                wordLookupFormatter.formatUsage("/add <word>")
             )
             return
         }

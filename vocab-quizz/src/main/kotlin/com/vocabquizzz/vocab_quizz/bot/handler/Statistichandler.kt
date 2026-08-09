@@ -6,49 +6,21 @@ import com.vocabquizzz.vocab_quizz.service.StatisticService
 import com.vocabquizzz.vocab_quizz.service.WordService
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
-import com.vocabquizzz.vocab_quizz.model.UserStatistic
-import com.vocabquizzz.vocab_quizz.model.WordStatistic
 import com.vocabquizzz.vocab_quizz.model.WordLookupResult
-import com.vocabquizzz.vocab_quizz.entity.Word
+import com.vocabquizzz.vocab_quizz.bot.formatter.WordLookupFormatter
+import com.vocabquizzz.vocab_quizz.bot.formatter.StatisticFormatter
 
 @Component
 class StatisticHandler(
     private val telegramGateway: TelegramGateway,
     private val statisticService: StatisticService,
     private val userService: UserService, 
-    private val wordService: WordService
+    private val wordService: WordService,
+    private val wordLookupFormatter: WordLookupFormatter,
+    private val statisticFormatter: StatisticFormatter
 ) {
 
-    private fun formatUserStatistic(stat: UserStatistic) = """
-        📊 Your statistics
-        Words in dictionary: ${stat.totalWords}
-        Words practiced: ${stat.wordsAttempted}
-        Total attempts: ${stat.totalAttempts}
-        Correct: ${stat.correctAnswers}
-        Wrong: ${stat.wrongAnswers}
-        Accuracy: ${"%.2f".format(stat.accuracy)}%
-    """.trimIndent()
-
-    private fun formatWordStatistic(stat: WordStatistic) = """
-        📊 Statistics for "${stat.word}"
-        Attempts: ${stat.totalAttempts}
-        Correct: ${stat.correctAnswers}
-        Wrong: ${stat.wrongAnswers}
-        Accuracy: ${"%.2f".format(stat.accuracy)}%
-    """.trimIndent()
-
-    private fun formatSuggestions(query: String, words: List<Word>) = buildString {
-        appendLine("❌ Word '$query' not found.")
-        appendLine()
-        appendLine("Did you mean:")
-        appendLine()
-
-        words.forEach {
-            appendLine("• ${it.word}")
-        }
-    }
-
-    fun handle(message: Message) {
+    fun handle(message: Message) {  
         val chatId = message.chatId.toString()
         val user = userService.getOrCreate(chatId.toLong())
 
@@ -58,19 +30,19 @@ class StatisticHandler(
 
         if (query.isNullOrBlank()) {
             val stat = statisticService.getUserStatistic(user)
-            telegramGateway.sendText(chatId, formatUserStatistic(stat))
+            telegramGateway.sendText(chatId, statisticFormatter.formatUserStatistic(stat))
             return
         }
 
         when (val lookup = wordService.lookupWord(user, query)) {
             is WordLookupResult.Found -> {
                 val stat = statisticService.getStatisticForWord(lookup.word)
-                telegramGateway.sendText(chatId, formatWordStatistic(stat))
+                telegramGateway.sendText(chatId, statisticFormatter.formatWordStatistic(stat))
             }
             is WordLookupResult.Suggestions ->
-                telegramGateway.sendText(chatId, formatSuggestions(lookup.query, lookup.words))
+                telegramGateway.sendText(chatId, wordLookupFormatter.formatSuggestions(lookup.query, lookup.words))
             WordLookupResult.NotFound ->
-                telegramGateway.sendText(chatId, "❌ Word '$query' not found.")
+                telegramGateway.sendText(chatId, wordLookupFormatter.formatNotFound(query))
         }
     }
 }

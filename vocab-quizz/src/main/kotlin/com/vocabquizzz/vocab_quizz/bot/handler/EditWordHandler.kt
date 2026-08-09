@@ -8,13 +8,15 @@ import com.vocabquizzz.vocab_quizz.model.EditableField
 import com.vocabquizzz.vocab_quizz.model.EditWordStep.*
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
+import com.vocabquizzz.vocab_quizz.bot.formatter.WordLookupFormatter
 
 @Component
 class EditWordHandler(
     private val sessionService: EditWordSessionService,
     private val wordService: WordService,
     private val userService: UserService,
-    private val telegramGateway: TelegramGateway
+    private val telegramGateway: TelegramGateway,
+    private val wordLookupFormatter: WordLookupFormatter
 )  {
 
     private fun sendValidationError(chatId: String, block: () -> Unit) {
@@ -36,7 +38,7 @@ class EditWordHandler(
         if (wordText.isNullOrBlank()) {
             telegramGateway.sendText(
                 chatId,
-                "Usage: /edit <word>"
+                wordLookupFormatter.formatUsage("/edit <word>")
             )
             return
         }

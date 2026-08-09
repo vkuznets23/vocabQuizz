@@ -2,9 +2,9 @@ package com.vocabquizzz.vocab_quizz.bot
 
 import org.springframework.stereotype.Component
 import com.vocabquizzz.vocab_quizz.bot.handler.HelpHandler
-import com.vocabquizzz.vocab_quizz.bot.handler.WordListCallbackHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.AllWordsCallbackHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.GetWordHandler
-import com.vocabquizzz.vocab_quizz.bot.handler.AllWordHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.AllWordsHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.AddWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.DeleteWordHandler
@@ -22,7 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 @Component
 class BotDispatcher(
     private val helpHandler: HelpHandler,
-    private val allWordsHandler: AllWordHandler,
+    private val allWordsHandler: AllWordsHandler,
     private val getWordHandler: GetWordHandler,
     private val quizHandler: QuizHandler,
     private val telegramGateway: TelegramGateway,
@@ -33,7 +33,7 @@ class BotDispatcher(
     private val deleteWordHandler: DeleteWordHandler,
     private val cancelSessionHandler: CancelSessionHandler,
     private val editWordHandler: EditWordHandler,
-    private val wordListCallbackHandler: WordListCallbackHandler,
+    private val allWordsCallbackHandler: AllWordsCallbackHandler,
 
 ) {
     fun dispatch(message: Message) {
@@ -92,7 +92,7 @@ class BotDispatcher(
 
         when {
             callback.data.startsWith("words:") ->
-                wordListCallbackHandler.handle(callback)
+                allWordsCallbackHandler.handle(callback)
         }
     }
 }

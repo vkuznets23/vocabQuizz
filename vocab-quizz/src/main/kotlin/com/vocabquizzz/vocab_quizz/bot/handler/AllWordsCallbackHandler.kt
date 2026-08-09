@@ -1,16 +1,18 @@
 package com.vocabquizzz.vocab_quizz.bot.handler
 
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
-import org.springframework.stereotype.Service
-import com.vocabquizzz.vocab_quizz.bot.handler.AllWordHandler
+import org.springframework.stereotype.Component
 import com.vocabquizzz.vocab_quizz.service.UserService
+import com.vocabquizzz.vocab_quizz.service.WordService
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery
+import com.vocabquizzz.vocab_quizz.bot.formatter.AllWordsListFormatter
 
-@Service
-class WordListCallbackHandler(
-    private val allWordHandler: AllWordHandler,
+@Component
+class AllWordsCallbackHandler(
     private val userService: UserService,
+    private val allWordsListFormatter: AllWordsListFormatter,
     private val telegramGateway: TelegramGateway,
+    private val wordService: WordService,
 ) {
     fun handle(callback: CallbackQuery) {
 
@@ -27,7 +29,7 @@ class WordListCallbackHandler(
             userService.getOrCreate(chatId.toLong())
 
         val (text, keyboard) =
-            allWordHandler.buildPage(user, page)
+            allWordsListFormatter.formatPage(wordService.getWords(user, page))
 
         telegramGateway.editMessage(
             chatId,
