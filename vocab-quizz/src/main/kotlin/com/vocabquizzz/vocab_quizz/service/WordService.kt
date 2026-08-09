@@ -8,6 +8,7 @@ import com.vocabquizzz.vocab_quizz.repository.WordRepository
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import com.vocabquizzz.vocab_quizz.model.WordConstraints
 
 
 @Service
@@ -15,7 +16,75 @@ class WordService(
     private val wordRepository: WordRepository
 ){
 
-    private val wordsPerPage = 20
+    // ── Private: validation & normalization ───────────
+
+    private fun validateWord(word: String) {
+        require(word.isNotBlank()) {
+            "Word cannot be empty."
+        }
+
+        require(word.length <= WordConstraints.MAX_WORD_LENGTH) {
+            "Word cannot be longer than ${WordConstraints.MAX_WORD_LENGTH} characters."
+        }
+    }
+
+    private fun validateDefinition(definition: String) {
+        require(definition.isNotBlank()) {
+            "Definition cannot be empty."
+        }
+
+        require(definition.length <= WordConstraints.MAX_DEFINITION_LENGTH) {
+            "Definition cannot be longer than ${WordConstraints.MAX_DEFINITION_LENGTH} characters."
+        }
+    }
+    
+    private fun validateExample(example: String?) {
+        require(example == null || example.isNotBlank()) {
+            "Example cannot be empty."
+        }
+
+        require(example == null || example.length <= WordConstraints.MAX_EXAMPLE_LENGTH) {
+            "Example cannot be longer than ${WordConstraints.MAX_EXAMPLE_LENGTH} characters."
+        }
+    }
+
+    // ── Public: validation helpers ────────────────────
+
+    fun validateWordInput(raw: String) {
+        validateWord(raw.trim())
+    }
+
+    fun validateDefinitionInput(raw: String) {
+        validateDefinition(raw.trim())
+    }
+
+    fun validateExampleInput(raw: String?) {
+        validateExample(raw?.trim()?.takeIf { it.isNotBlank() })
+    }
+
+    fun ensureWordAvailable(user: User, word: String) {
+        val normalized = word.trim()
+        validateWord(normalized)
+        if (wordRepository.existsByUserAndWordIgnoreCase(user, normalized)) {
+            throw IllegalArgumentException("Word already exists")
+        }
+    }
+
+    // ── Read ──────────────────────────────────────────
+
+    fun getWord(
+        user:User,
+        word: String
+    ): Word? {
+        return wordRepository.findByUserAndWordIgnoreCase(user, word.trim())
+    }
+
+    fun findByIdAndUser(
+        wordId: Long,
+        user: User
+    ): Word? {
+        return wordRepository.findByIdAndUser(wordId, user)
+    }
 
     fun searchWords(
         user: User,
@@ -26,48 +95,36 @@ class WordService(
     fun getWords(user: User, page: Int): Page<Word> {
         return wordRepository.findAllByUser(
             user,
-            PageRequest.of(page, wordsPerPage)
+            PageRequest.of(page, WordConstraints.MAX_WORDS_PER_PAGE)
         )
     }
     
     fun getAllWords(user: User): List<Word> =
         wordRepository.findAllByUser(user)
 
-    fun randomWord(user: User): Word =
-        wordRepository.findAllByUser(user).random()
+    fun countWords(user: User): Long =
+        wordRepository.countByUser(user)
+    
+    fun hasEnoughWordsForQuiz(user: User): Boolean =
+        countWords(user) >= WordConstraints.MIN_WORDS_FOR_QUIZ
 
+    // ── Write ──────────────────────────────────────────
+
+    @Transactional
     fun addWord(
         user: User,
         word: String,
         definition: String,
         example: String?
     ): Word {
-
         val normalizedWord = word.trim()
         val normalizedDefinition = definition.trim()
-        val normalizedExample = example?.trim()
+        val normalizedExample = example?.trim()?.takeIf { it.isNotBlank() }
 
-        require(normalizedWord.isNotBlank()) {
-            "Word cannot be empty."
-        }
 
-        require(normalizedDefinition.isNotBlank()) {
-            "Definition cannot be empty."
-        }
-
-        require(normalizedWord.length <= 50) {
-            "Word cannot be longer than 50 characters."
-        }
-
-        require(normalizedDefinition.length <= 200) {
-            "Definition cannot be longer than 200 characters."
-        }
-
-        require(
-            normalizedExample == null || normalizedExample.length <= 200
-        ) {
-            "Example cannot be longer than 200 characters."
-        }
+        validateWord(normalizedWord)
+        validateDefinition(normalizedDefinition)
+        validateExample(normalizedExample)
 
         if (wordRepository.existsByUserAndWordIgnoreCase(user, normalizedWord)) {
             throw IllegalArgumentException("Word already exists")
@@ -88,25 +145,8 @@ class WordService(
         user: User,
         word: String
     ): Boolean {
-        return wordRepository.deleteByUserAndWordIgnoreCase(user, word) > 0
+        return wordRepository.deleteByUserAndWordIgnoreCase(user, word.trim()) > 0
     }
-
-    fun getWord(
-        user:User,
-        word: String
-    ): Word? {
-        return wordRepository.findByUserAndWordIgnoreCase(user, word.trim())
-    }
-
-    fun findByIdAndUser(
-        wordId: Long,
-        user: User
-    ): Word? {
-        return wordRepository.findByIdAndUser(wordId, user)
-    }
-
-    fun countWords(user: User): Long =
-        wordRepository.countByUser(user)
 
     @Transactional
     fun updateWord(
@@ -121,47 +161,28 @@ class WordService(
         when (field) {
 
             EditableField.WORD -> {
-                val newWord = value?.trim()
-
-                require(!newWord.isNullOrBlank()) {
-                    "Word cannot be empty."
-                }
-
-                require(newWord.length <= 50) {
-                    "Word cannot be longer than 50 characters."
-                }
+                val newWord = value?.trim() ?: throw IllegalArgumentException("Word cannot be empty.")
+                validateWord(newWord)
 
                 if (
                     wordRepository.existsByUserAndWordIgnoreCase(user, newWord) &&
                     !word.word.equals(newWord, ignoreCase = true)
                 ) {
-                    throw IllegalArgumentException("Word already exists.")
+                    throw IllegalArgumentException("Word already exists")
                 }
 
                 word.word = newWord
             }
 
             EditableField.DEFINITION -> {
-                val newDefinition = value?.trim()
-
-                require(!newDefinition.isNullOrBlank()) {
-                    "Definition cannot be empty."
-                }
-
-                require(newDefinition.length <= 200) {
-                    "Definition cannot be longer than 200 characters."
-                }
-
+                val newDefinition = value?.trim() ?: throw IllegalArgumentException("Definition cannot be empty.")
+                validateDefinition(newDefinition)
                 word.definition = newDefinition
             }
 
             EditableField.EXAMPLE -> {
-                val newExample = value?.trim()
-
-                require(newExample == null || newExample.length <= 200) {
-                    "Example cannot be longer than 200 characters."
-                }
-
+                val newExample = value?.trim()?.takeIf { it.isNotBlank() }
+                validateExample(newExample)
                 word.example = newExample
             }
         }
