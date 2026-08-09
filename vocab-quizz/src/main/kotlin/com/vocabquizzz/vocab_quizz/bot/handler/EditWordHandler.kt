@@ -6,18 +6,28 @@ import com.vocabquizzz.vocab_quizz.service.UserService
 import com.vocabquizzz.vocab_quizz.service.EditWordSessionService
 import com.vocabquizzz.vocab_quizz.model.EditableField
 import com.vocabquizzz.vocab_quizz.model.EditWordStep.*
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
 
-@Service
+@Component
 class EditWordHandler(
     private val sessionService: EditWordSessionService,
     private val wordService: WordService,
     private val userService: UserService,
     private val telegramGateway: TelegramGateway
 )  {
+
+    private fun sendValidationError(chatId: String, block: () -> Unit) {
+        try {
+            block()
+        } catch (e: IllegalArgumentException) {
+            telegramGateway.sendText(chatId, "❌ ${e.message}")
+        }
+    }
+
     fun start(message: Message) {
         val chatId = message.chatId.toString()
+        val user = userService.getOrCreate(chatId.toLong())
 
         val wordText = message.text
             ?.substringAfter("/edit")
@@ -31,21 +41,13 @@ class EditWordHandler(
             return
         }
 
-        println("[$wordText]")
-
-        val user = userService.getOrCreate(chatId.toLong())
-
         val wordEntity = wordService.getWord(user, wordText)
         if (wordEntity == null) {
-            telegramGateway.sendText(chatId, "Word not found.")
+            telegramGateway.sendText(chatId, "❌ Word not found.")
             return
         }
-
         if (!sessionService.start(chatId)) {
-            telegramGateway.sendText(
-                chatId,
-                "You're already changing a word 😊"
-            )
+            telegramGateway.sendText(chatId, "You're already editing a word 😊")
             return
         }
 
@@ -108,7 +110,7 @@ class EditWordHandler(
 
                         telegramGateway.sendText(
                             chatId,
-                            "Current example: ${session.example}\nEnter the new example or /skip::"
+                            "Current example: ${session.example ?: "-"}\nEnter the new example or /skip:"
                         )
                     }
 
@@ -122,35 +124,28 @@ class EditWordHandler(
             }
 
             ENTER_VALUE -> {
-                    val value =
-                        if (
-                            session.field == EditableField.EXAMPLE &&
-                            message.text == "/skip"
-                        ) null
-                        else message.text.trim()
+                    val text = message.text?.trim()
 
-                    
-                    try {
+                    if (session.field == EditableField.EXAMPLE && text.isNullOrBlank()) {
+                        telegramGateway.sendText(chatId, "❌ Enter an example or type /skip.")
+                        return
+                    }
+
+                    val value = when {
+                        session.field == EditableField.EXAMPLE && text == "/skip" -> null
+                        else -> text
+                    }
+
+                    sendValidationError(chatId) {
                         wordService.updateWord(
                             user = user,
                             wordId = session.wordId!!,
                             field = session.field!!,
                             value = value
                         )
-
                         sessionService.finish(chatId)
-
-                        telegramGateway.sendText(
-                            chatId,
-                            "✅ Word updated!"
-                        )
-                    } catch (e: IllegalArgumentException) {
-                        telegramGateway.sendText(
-                            chatId,
-                            "❌ ${e.message}"
-                        )
+                        telegramGateway.sendText(chatId, "✅ Word updated!")
                     }
-
                 }
             }
         }

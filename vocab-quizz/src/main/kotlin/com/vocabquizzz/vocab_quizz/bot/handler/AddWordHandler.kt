@@ -65,7 +65,7 @@ class AddWordHandler(
 
                 sendValidationError(chatId) {
                     wordService.validateDefinitionInput(text ?: "")
-                    session.definition = text
+                    session.definition = text!!.trim()
                     session.step = EXAMPLE
                     telegramGateway.sendText(chatId, "Enter an example or type /skip:")
                 }
@@ -83,7 +83,6 @@ class AddWordHandler(
                 val user = userService.getOrCreate(chatId.toLong())
 
                 sendValidationError(chatId) {
-                    wordService.validateExampleInput(example)
                     wordService.addWord(
                         user = user,
                         word = session.word!!,

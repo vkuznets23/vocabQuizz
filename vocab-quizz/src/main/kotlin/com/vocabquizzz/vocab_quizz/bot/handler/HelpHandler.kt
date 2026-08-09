@@ -1,10 +1,10 @@
 package com.vocabquizzz.vocab_quizz.bot.handler
 
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
 
-@Service
+@Component
 class HelpHandler(
     private val telegramGateway: TelegramGateway
 ) {
