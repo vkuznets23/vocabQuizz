@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import com.vocabquizzz.vocab_quizz.model.WordConstraints
+import com.vocabquizzz.vocab_quizz.model.WordLookupResult
 
 
 @Service
@@ -186,5 +187,14 @@ class WordService(
                 word.example = newExample
             }
         }
+    }
+
+    fun lookupWord(user: User, query: String): WordLookupResult {
+        val normalized = query.trim()
+        getWord(user, normalized)?.let { return WordLookupResult.Found(it) }
+
+        val suggestions = searchWords(user, normalized)
+        return if (suggestions.isEmpty()) WordLookupResult.NotFound
+           else WordLookupResult.Suggestions(normalized, suggestions)
     }
 }

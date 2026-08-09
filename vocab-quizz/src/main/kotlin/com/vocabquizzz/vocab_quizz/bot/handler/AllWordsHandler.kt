@@ -12,8 +12,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow
 import org.springframework.data.domain.Page
 
-
-
 @Service
 class AllWordHandler(
     private val wordService: WordService,
