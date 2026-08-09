@@ -1,6 +1,7 @@
 package com.vocabquizzz.vocab_quizz.service
 
 import com.vocabquizzz.vocab_quizz.model.Quiz
+import com.vocabquizzz.vocab_quizz.model.QuizType
 import org.springframework.stereotype.Service
 import kotlin.random.Random
 import com.vocabquizzz.vocab_quizz.entity.Word
@@ -23,10 +24,16 @@ class QuizService(
     private val decks = mutableMapOf<Long, MutableList<Word>>()
 
     private fun otherWords(word: Word): List<Word> =
-        wordRepository.findAllByUser(word.user)
+        wordRepository.findAllByUser(word.user) // TODO: think about this in the future
             .filter { it.id != word.id }
 
     fun getQuiz(user: User): Quiz {
+        val allWords = wordRepository.findAllByUser(user)
+
+        require(allWords.size >= 4) {
+            "At least 4 words are required to start a quiz."
+        }
+
         var deck = decks[user.id]
 
         if (deck == null || deck.isEmpty()) {
@@ -36,8 +43,6 @@ class QuizService(
 
             decks[user.id] = deck
         }
-
-        // do i need words < 4 error here?
 
         val word = deck.removeFirst()
 
@@ -65,7 +70,9 @@ class QuizService(
         return Quiz(
             question = word.definition,
             options = options,
-            correct = word.word
+            correct = word.word,
+            type = QuizType.DEFINITION_TO_WORD,
+            wordId = word.id
         )
 
     }
@@ -81,7 +88,9 @@ class QuizService(
         return Quiz(
             question = "What does '${word.word}' mean?",
             options = options,
-            correct = word.definition
+            correct = word.definition,
+            type = QuizType.WORD_TO_DEFINITION,
+            wordId = word.id
         )
     }
 
@@ -103,7 +112,9 @@ class QuizService(
                 $definition
             """.trimIndent(),
             options = listOf("True", "False"),
-            correct = if (isTrue) "True" else "False"
+            correct = if (isTrue) "True" else "False",
+            type = QuizType.TRUE_FALSE,
+            wordId = word.id
         )
     }
 
@@ -118,7 +129,9 @@ class QuizService(
         return Quiz(
             question = word.example ?: "",
             options = options,
-            correct = word.word
+            correct = word.word,
+            type = QuizType.SENTENCE,
+            wordId = word.id
         )
     }
 }

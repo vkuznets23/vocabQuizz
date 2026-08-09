@@ -14,3 +14,6 @@ CREATE TABLE words (
     CONSTRAINT uq_user_word
         UNIQUE (user_id, word)
 );
+
+CREATE UNIQUE INDEX uq_words_user_word_lower
+    ON words (user_id, LOWER(word));

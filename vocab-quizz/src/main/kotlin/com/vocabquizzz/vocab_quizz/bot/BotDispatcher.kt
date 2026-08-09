@@ -10,6 +10,7 @@ import com.vocabquizzz.vocab_quizz.bot.handler.AddWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.DeleteWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.CancelSessionHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.EditWordHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.StatisticHandler
 import com.vocabquizzz.vocab_quizz.service.AddWordSessionService
 import com.vocabquizzz.vocab_quizz.service.EditWordSessionService
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
@@ -28,6 +29,7 @@ class BotDispatcher(
     private val addWordSessionService: AddWordSessionService,
     private val editWordSessionService: EditWordSessionService,
     private val addWordHandler: AddWordHandler,
+    private val statisticHandler: StatisticHandler,
     private val deleteWordHandler: DeleteWordHandler,
     private val cancelSessionHandler: CancelSessionHandler,
     private val editWordHandler: EditWordHandler,
@@ -55,6 +57,9 @@ class BotDispatcher(
 
             "/edit" ->
                 editWordHandler.start(message)
+            
+            "/stat" ->
+                statisticHandler.handle(message)
             
             "/delete" ->
                 deleteWordHandler.handle(message)

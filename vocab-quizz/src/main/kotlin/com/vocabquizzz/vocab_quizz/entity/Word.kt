@@ -15,13 +15,13 @@ class Word(
     @JoinColumn(name = "user_id", nullable = false)
     val user: User = User(),
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 50)
     var word: String = "",
 
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = false, length = 200)
     var definition: String = "",
 
-    @Column(length = 2000)
+    @Column(length = 200)
     var example: String? = null,
 
     @Column(name = "created_at", insertable = false, updatable = false)

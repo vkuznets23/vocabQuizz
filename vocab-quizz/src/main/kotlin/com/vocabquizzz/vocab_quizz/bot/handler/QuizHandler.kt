@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.bot.handler
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import com.vocabquizzz.vocab_quizz.service.UserService
 import com.vocabquizzz.vocab_quizz.service.QuizService
+import com.vocabquizzz.vocab_quizz.service.WordAttemptService
 import com.vocabquizzz.vocab_quizz.service.WordService
 import com.vocabquizzz.vocab_quizz.service.LessonSessionService
 import org.springframework.stereotype.Service
@@ -13,6 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 class QuizHandler(
     private val lessonSessionService: LessonSessionService,
     private val quizService: QuizService,
+    private val wordAttemptService: WordAttemptService,
     private val wordService: WordService,
     private val userService: UserService,
     private val telegramGateway: TelegramGateway
@@ -61,6 +63,8 @@ class QuizHandler(
         lessonSessionService.registerPoll(
             pollId = pollId,
             chatId = chatId,
+            wordId = quiz.wordId,
+            quizType = quiz.type,
             correctOption = quiz.options.indexOf(quiz.correct)
         )
     }
@@ -84,9 +88,20 @@ class QuizHandler(
 
         val selectedOption = answer.optionIds.first()
 
+        val correct = selectedOption == activePoll.correctOption
+
         val hasNext = lessonSessionService.answer(
             chatId = activePoll.chatId,
-            correct = selectedOption == activePoll.correctOption
+            correct = correct
+        )
+
+        val user = userService.getOrCreate(activePoll.chatId.toLong())
+
+        wordAttemptService.recordAttempt(
+            user = user,
+            wordId = activePoll.wordId,
+            quizType = activePoll.quizType,
+            correct = correct
         )
 
         if (hasNext) {

@@ -32,10 +32,10 @@ class AddWordHandler(
             return
         }
 
-        if (word.length > 100) {
+        if (word.length > 50) {
             telegramGateway.sendText(
                 chatId,
-                "❌ Word is too long. Maximum is 100 characters."
+                "❌ Word is too long. Maximum is 50 characters."
             )
             return
         }
@@ -80,10 +80,10 @@ class AddWordHandler(
                     return
                 }
 
-                if (text.length > 1000) {
+                if (text.length > 200) {
                     telegramGateway.sendText(
                         chatId,
-                        "❌ Definition is too long. Maximum is 1000 characters."
+                        "❌ Definition is too long. Maximum is 200 characters."
                     )
                     return
                 }
@@ -105,10 +105,10 @@ class AddWordHandler(
                     return
                 }
 
-                if (text.length > 2000) {
+                if (text.length > 200) {
                     telegramGateway.sendText(
                         chatId,
-                        "❌ Example is too long. Maximum is 2000 characters."
+                        "❌ Example is too long. Maximum is 200 characters."
                     )
                     return
                 }

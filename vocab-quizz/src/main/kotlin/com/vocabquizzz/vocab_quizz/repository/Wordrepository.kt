@@ -17,9 +17,12 @@ interface WordRepository : JpaRepository<Word, Long> {
         user: User,
         query: String
     ): List<Word>
-    fun findByUserAndWord(user: User, word: String): Word?
     fun findByIdAndUser(id: Long, user: User): Word?
-    fun existsByUserAndWord(user: User, word: String): Boolean
-    fun deleteByUserAndWord(user: User, word: String): Long
+    fun findByUserAndWordIgnoreCase(user: User, word: String): Word?
+    fun existsByUserAndWordIgnoreCase(
+        user: User,
+        word: String
+    ): Boolean
+    fun deleteByUserAndWordIgnoreCase(user: User, word: String): Long
     fun countByUser(user: User): Long
 }

@@ -1,6 +1,8 @@
 package com.vocabquizzz.vocab_quizz.service
 
 import com.vocabquizzz.vocab_quizz.model.QuizSession
+import com.vocabquizzz.vocab_quizz.model.QuizType
+import com.vocabquizzz.vocab_quizz.model.ActivePoll
 import org.springframework.stereotype.Service
 
 
@@ -14,10 +16,6 @@ import org.springframework.stereotype.Service
  
 @Service
 class LessonSessionService {
-    data class ActivePoll(
-        val chatId: String,
-        val correctOption: Int
-    )
 
     private val sessions = mutableMapOf<String, QuizSession>()
     private val activePolls = mutableMapOf<String, ActivePoll>()
@@ -38,9 +36,17 @@ class LessonSessionService {
     fun registerPoll(
         pollId: String,
         chatId: String,
+        wordId: Long,
+        quizType: QuizType,
         correctOption: Int
+
     ) {
-        activePolls[pollId] = ActivePoll(chatId, correctOption)
+        activePolls[pollId] = ActivePoll(
+            chatId = chatId,
+            wordId = wordId,
+            quizType = quizType,
+            correctOption = correctOption
+        )
     }
 
     fun finishPoll(pollId: String): ActivePoll? {

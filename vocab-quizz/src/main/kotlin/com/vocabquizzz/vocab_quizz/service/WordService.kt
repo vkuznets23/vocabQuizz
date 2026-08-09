@@ -55,23 +55,29 @@ class WordService(
             "Definition cannot be empty."
         }
 
-        require(word.length <= 100) {
-            "Word cannot be longer than 100 characters."
+        require(normalizedWord.length <= 50) {
+            "Word cannot be longer than 50 characters."
         }
 
-        require(definition.length <= 1000) {
-            "Definition cannot be longer than 1000 characters."
+        require(normalizedDefinition.length <= 200) {
+            "Definition cannot be longer than 200 characters."
         }
 
-        if (wordRepository.existsByUserAndWord(user, word)) {
+        require(
+            normalizedExample == null || normalizedExample.length <= 200
+        ) {
+            "Example cannot be longer than 200 characters."
+        }
+
+        if (wordRepository.existsByUserAndWordIgnoreCase(user, normalizedWord)) {
             throw IllegalArgumentException("Word already exists")
         }
 
         val newWord = Word(
             user = user,
-            word = word,
-            definition = definition,
-            example = example
+            word = normalizedWord,
+            definition = normalizedDefinition,
+            example = normalizedExample
         )
 
         return wordRepository.save(newWord)
@@ -82,14 +88,21 @@ class WordService(
         user: User,
         word: String
     ): Boolean {
-        return wordRepository.deleteByUserAndWord(user, word) > 0
+        return wordRepository.deleteByUserAndWordIgnoreCase(user, word) > 0
     }
 
     fun getWord(
         user:User,
         word: String
     ): Word? {
-        return wordRepository.findByUserAndWord(user, word)
+        return wordRepository.findByUserAndWordIgnoreCase(user, word.trim())
+    }
+
+    fun findByIdAndUser(
+        wordId: Long,
+        user: User
+    ): Word? {
+        return wordRepository.findByIdAndUser(wordId, user)
     }
 
     fun countWords(user: User): Long =
@@ -102,7 +115,7 @@ class WordService(
         field: EditableField,
         value: String?
     ) {
-        val word = wordRepository.findByIdAndUser(wordId, user)
+        val word = findByIdAndUser(wordId, user)
             ?: throw IllegalArgumentException("Word not found")
 
         when (field) {
@@ -114,12 +127,12 @@ class WordService(
                     "Word cannot be empty."
                 }
 
-                require(newWord.length <= 100) {
-                    "Word cannot be longer than 100 characters."
+                require(newWord.length <= 50) {
+                    "Word cannot be longer than 50 characters."
                 }
 
                 if (
-                    wordRepository.existsByUserAndWord(user, newWord) &&
+                    wordRepository.existsByUserAndWordIgnoreCase(user, newWord) &&
                     !word.word.equals(newWord, ignoreCase = true)
                 ) {
                     throw IllegalArgumentException("Word already exists.")
@@ -135,8 +148,8 @@ class WordService(
                     "Definition cannot be empty."
                 }
 
-                require(newDefinition.length <= 1000) {
-                    "Definition cannot be longer than 1000 characters."
+                require(newDefinition.length <= 200) {
+                    "Definition cannot be longer than 200 characters."
                 }
 
                 word.definition = newDefinition
@@ -145,8 +158,8 @@ class WordService(
             EditableField.EXAMPLE -> {
                 val newExample = value?.trim()
 
-                require(newExample == null || newExample.length <= 2000) {
-                    "Example cannot be longer than 2000 characters."
+                require(newExample == null || newExample.length <= 200) {
+                    "Example cannot be longer than 200 characters."
                 }
 
                 word.example = newExample
