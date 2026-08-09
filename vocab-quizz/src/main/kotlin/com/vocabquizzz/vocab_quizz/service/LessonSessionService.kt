@@ -72,4 +72,12 @@ class LessonSessionService {
     fun finishLesson(chatId: String): QuizSession? {
         return sessions.remove(chatId)
     }
+
+    fun cancelLesson(chatId: String): Boolean {
+        if (!sessions.containsKey(chatId)) return false
+
+        sessions.remove(chatId)
+        activePolls.entries.removeIf { it.value.chatId == chatId }
+        return true
+    }
 }

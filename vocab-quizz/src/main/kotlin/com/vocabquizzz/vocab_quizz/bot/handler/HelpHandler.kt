@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.bot.handler
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
+import com.vocabquizzz.vocab_quizz.model.WordConstraints
 
 @Component
 class HelpHandler(
@@ -16,36 +17,51 @@ class HelpHandler(
             """
             🤖 Vocab Quiz Bot
 
-            Here's what I can do:
+            📚 Vocabulary
 
             📝 /add <word>
-            Add a new word to your vocabulary.
-            I'll ask you for its definition and an optional example.
-
-            💡 If you add an example, replace the word with "___".
-            For example:
-            I ate an ___ for breakfast.
+            Add a word. I'll ask for definition, then example (or /skip).
 
             ✏️ /edit <word>
-            Edit a word, its definition, or its example.
+            Edit word, definition, or example. Choose: 1/word, 2/definition, 3/example.
+            For example use /skip to clear it.
 
             🗑️ /delete <word>
             Delete a word from your vocabulary.
 
-            🧠 /quiz
-            Start a quiz using your saved words.
+            📖 /word <word>
+            Show definition and example. Suggests similar words if not found.
 
             📚 /words
-            Show all the words you've added to your vocabulary.
+            List your words (paginated). Use ⬅️ ➡️ buttons to navigate.
 
-            📖 /word <word>
-            Show information about a word: definition and example.
+            🧠 Quiz
+
+            /quiz
+            Start a quiz: '${WordConstraints.QUESTIONS_PER_LESSON}' questions, different question types.
+            You need at least '${WordConstraints.MIN_WORDS_FOR_QUIZ}' words in your dictionary.
+            Answer using the poll buttons Telegram sends you.
+
+            📊 Statistics
+
+            /stat
+            Your overall quiz stats (words practiced, accuracy, etc.).
+
+            /stat <word>
+            Stats for a specific word.
+
+            ⚙️ Other
 
             ❌ /cancel
-            Cancel the current operation (adding, editing, or quiz).
+            Cancel current add / edit / quiz session.
 
-            💡 Tip:
-            Use /help anytime to see this list again.
+            ❓ /help
+            Show this message.
+
+            💡 Tips
+            • Example sentences: replace the word with ___
+            e.g. I ate an ___ for breakfast.
+            • Word max 50 chars, definition/example max 200 chars.
             """.trimIndent()
         )
 
