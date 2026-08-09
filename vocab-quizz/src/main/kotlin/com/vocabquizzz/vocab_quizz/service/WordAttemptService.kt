@@ -2,6 +2,7 @@ package com.vocabquizzz.vocab_quizz.service
 
 import org.springframework.stereotype.Service
 import com.vocabquizzz.vocab_quizz.model.QuizType
+import com.vocabquizzz.vocab_quizz.model.UserStatistic
 import com.vocabquizzz.vocab_quizz.model.WordStatistic
 import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.entity.WordAttempt
@@ -65,4 +66,36 @@ class WordAttemptService(
         )
     } 
 
+    fun getUserStatistic(user: User): UserStatistic {
+        val totalWords = wordService.countWords(user)
+        val wordsAttempted =
+            wordAttemptRepository.countDistinctWordsByUser(user)
+        val totalAttempts =
+            wordAttemptRepository.countByUser(user)
+
+        val correctAnswers =
+            wordAttemptRepository.countByUserAndIsCorrect(
+                user,
+                true
+            )
+
+        val wrongAnswers =
+            totalAttempts - correctAnswers
+
+            val accuracy =
+        if (totalAttempts == 0L) {
+            0.0
+        } else {
+            correctAnswers.toDouble() / totalAttempts * 100
+        }
+
+        return UserStatistic(
+            totalWords = totalWords,
+            wordsAttempted = wordsAttempted,
+            totalAttempts = totalAttempts,
+            correctAnswers = correctAnswers,
+            wrongAnswers = wrongAnswers,
+            accuracy = accuracy
+        )
+    }
 }

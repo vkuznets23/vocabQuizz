@@ -23,26 +23,40 @@ class StatisticHandler(
             ?.trim()
 
         if (word.isNullOrBlank()) {
-            telegramGateway.sendText(
-                chatId,
-                "Usage: /stat <word>"
-            )
-            return
+                // /stat
+                val statistic = statisticService.getUserStatistic(user)
+
+                telegramGateway.sendText( chatId, 
+                    """ 
+                    📊 Your statistics 
+
+                    Words in dictionary: ${statistic.totalWords} 
+                    Words practiced: ${statistic.wordsAttempted} 
+                    Total attempts: ${statistic.totalAttempts} 
+                    Correct: ${statistic.correctAnswers} 
+                    Wrong: ${statistic.wrongAnswers} 
+                    Accuracy: ${"%.2f".format(statistic.accuracy)}% 
+                    """.trimIndent() 
+                )
+
+                return 
         }
-
+         
         try {
-            val statistic = statisticService.getStatisticForWord(user, word)
+                // /stat <word>
+                val statistic = statisticService.getStatisticForWord(user, word)
 
-            telegramGateway.sendText( 
-                chatId, 
-                """ 
-                📊 Statistics for "${statistic.word}" 
-                Attempts: ${statistic.totalAttempts} 
-                Correct: ${statistic.correctAnswers} 
-                Wrong: ${statistic.wrongAnswers} 
-                Accuracy: ${"%.2f".format(statistic.accuracy)}% 
-                """.trimIndent() 
-            )
+                telegramGateway.sendText( 
+                    chatId, 
+                    """ 
+                    📊 Statistics for "${statistic.word}" 
+
+                    Attempts: ${statistic.totalAttempts} 
+                    Correct: ${statistic.correctAnswers} 
+                    Wrong: ${statistic.wrongAnswers} 
+                    Accuracy: ${"%.2f".format(statistic.accuracy)}% 
+                    """.trimIndent() 
+                )
         } catch (e: IllegalArgumentException) {
             telegramGateway.sendText(
                 chatId,
