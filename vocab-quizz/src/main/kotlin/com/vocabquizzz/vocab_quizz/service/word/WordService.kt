@@ -3,14 +3,14 @@ package com.vocabquizzz.vocab_quizz.service.word
 import org.springframework.stereotype.Service
 import com.vocabquizzz.vocab_quizz.entity.Word
 import com.vocabquizzz.vocab_quizz.entity.User
-import com.vocabquizzz.vocab_quizz.model.EditableField
+import com.vocabquizzz.vocab_quizz.model.word.EditableField
 import com.vocabquizzz.vocab_quizz.repository.WordRepository
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
-import com.vocabquizzz.vocab_quizz.model.WordConstraints
-import com.vocabquizzz.vocab_quizz.model.WordLookupResult
-import com.vocabquizzz.vocab_quizz.model.DeleteWordResult
+import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
+import com.vocabquizzz.vocab_quizz.model.word.WordLookupResult
+import com.vocabquizzz.vocab_quizz.model.word.DeleteWordResult
 
 
 @Service

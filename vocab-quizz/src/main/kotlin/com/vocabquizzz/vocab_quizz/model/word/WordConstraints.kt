@@ -1,4 +1,4 @@
-package com.vocabquizzz.vocab_quizz.model
+package com.vocabquizzz.vocab_quizz.model.word
 
 object WordConstraints {
     const val MAX_WORD_LENGTH = 50

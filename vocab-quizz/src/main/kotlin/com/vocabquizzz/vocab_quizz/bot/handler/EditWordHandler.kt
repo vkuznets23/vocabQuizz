@@ -4,8 +4,8 @@ import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import com.vocabquizzz.vocab_quizz.service.word.WordService
 import com.vocabquizzz.vocab_quizz.service.user.UserService
 import com.vocabquizzz.vocab_quizz.service.session.EditWordSessionService
-import com.vocabquizzz.vocab_quizz.model.EditableField
-import com.vocabquizzz.vocab_quizz.model.EditWordStep.*
+import com.vocabquizzz.vocab_quizz.model.word.EditableField
+import com.vocabquizzz.vocab_quizz.model.word.EditWordStep.*
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import com.vocabquizzz.vocab_quizz.bot.formatter.WordLookupFormatter

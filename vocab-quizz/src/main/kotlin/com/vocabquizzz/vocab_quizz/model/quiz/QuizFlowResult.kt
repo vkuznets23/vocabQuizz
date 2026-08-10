@@ -1,6 +1,6 @@
-package com.vocabquizzz.vocab_quizz.model
+package com.vocabquizzz.vocab_quizz.model.quiz
 
-import com.vocabquizzz.vocab_quizz.model.Quiz
+import com.vocabquizzz.vocab_quizz.model.quiz.Quiz
 
 sealed interface StartQuizResult {
     data class Ready(val chatId: String, val quiz: Quiz) : StartQuizResult

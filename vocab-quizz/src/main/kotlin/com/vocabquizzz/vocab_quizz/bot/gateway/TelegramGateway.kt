@@ -1,6 +1,6 @@
 package com.vocabquizzz.vocab_quizz.bot.gateway
 
-import com.vocabquizzz.vocab_quizz.model.Quiz
+import com.vocabquizzz.vocab_quizz.model.quiz.Quiz
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.polls.SendPoll
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage

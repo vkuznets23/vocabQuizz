@@ -1,4 +1,7 @@
-package com.vocabquizzz.vocab_quizz.model
+package com.vocabquizzz.vocab_quizz.model.session
+
+import com.vocabquizzz.vocab_quizz.model.word.EditableField
+import com.vocabquizzz.vocab_quizz.model.word.EditWordStep
 
 data class EditWordSession(
     var wordId: Long? = null,

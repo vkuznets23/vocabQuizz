@@ -1,8 +1,8 @@
 package com.vocabquizzz.vocab_quizz.service.stats
 
 import org.springframework.stereotype.Service
-import com.vocabquizzz.vocab_quizz.model.UserStatistic
-import com.vocabquizzz.vocab_quizz.model.WordStatistic
+import com.vocabquizzz.vocab_quizz.model.stats.UserStatistic
+import com.vocabquizzz.vocab_quizz.model.stats.WordStatistic
 import com.vocabquizzz.vocab_quizz.entity.Word
 import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.repository.WordAttemptRepository

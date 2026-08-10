@@ -2,7 +2,7 @@ package com.vocabquizzz.vocab_quizz.service.quiz
 
 import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.entity.Word
-import com.vocabquizzz.vocab_quizz.model.QuizType
+import com.vocabquizzz.vocab_quizz.model.quiz.QuizType
 import com.vocabquizzz.vocab_quizz.service.quiz.QuizService
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

@@ -1,17 +1,17 @@
 package com.vocabquizzz.vocab_quizz.service.quiz
 
 import org.springframework.stereotype.Service
-import com.vocabquizzz.vocab_quizz.model.StartQuizResult
-import com.vocabquizzz.vocab_quizz.model.AnswerResult
+import com.vocabquizzz.vocab_quizz.model.quiz.StartQuizResult
+import com.vocabquizzz.vocab_quizz.model.quiz.AnswerResult
 import com.vocabquizzz.vocab_quizz.entity.User
-import com.vocabquizzz.vocab_quizz.model.Quiz
+import com.vocabquizzz.vocab_quizz.model.quiz.Quiz
 import com.vocabquizzz.vocab_quizz.service.word.WordService
 import com.vocabquizzz.vocab_quizz.service.quiz.QuizService
 import com.vocabquizzz.vocab_quizz.service.user.UserService
 import com.vocabquizzz.vocab_quizz.service.quiz.QuizDeckService
 import com.vocabquizzz.vocab_quizz.service.quiz.LessonSessionService
 import com.vocabquizzz.vocab_quizz.service.word.WordAttemptService
-import com.vocabquizzz.vocab_quizz.model.WordConstraints    
+import com.vocabquizzz.vocab_quizz.model.word.WordConstraints    
 
 
 @Service

@@ -1,4 +1,6 @@
-package com.vocabquizzz.vocab_quizz.model
+package com.vocabquizzz.vocab_quizz.model.session
+
+import com.vocabquizzz.vocab_quizz.model.word.AddWordStep
 
 data class AddWordSession(
         var step: AddWordStep = AddWordStep.DEFINITION,

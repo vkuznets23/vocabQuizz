@@ -2,7 +2,7 @@ package com.vocabquizzz.vocab_quizz.entity
 
 import jakarta.persistence.*
 import java.time.LocalDateTime
-import com.vocabquizzz.vocab_quizz.model.WordConstraints
+import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
 
 @Entity
 @Table(name = "words")

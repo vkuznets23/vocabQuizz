@@ -8,9 +8,9 @@ import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
 import com.vocabquizzz.vocab_quizz.service.quiz.QuizFlowService
 import com.vocabquizzz.vocab_quizz.bot.formatter.QuizFormatter
-import com.vocabquizzz.vocab_quizz.model.StartQuizResult
-import com.vocabquizzz.vocab_quizz.model.AnswerResult
-import com.vocabquizzz.vocab_quizz.model.Quiz
+import com.vocabquizzz.vocab_quizz.model.quiz.StartQuizResult
+import com.vocabquizzz.vocab_quizz.model.quiz.AnswerResult
+import com.vocabquizzz.vocab_quizz.model.quiz.Quiz
 
 @Component
 class QuizHandler(

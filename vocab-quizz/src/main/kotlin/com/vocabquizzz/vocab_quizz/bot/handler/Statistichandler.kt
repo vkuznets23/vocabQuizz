@@ -6,7 +6,7 @@ import com.vocabquizzz.vocab_quizz.service.stats.StatisticService
 import com.vocabquizzz.vocab_quizz.service.word.WordService
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
-import com.vocabquizzz.vocab_quizz.model.WordLookupResult
+import com.vocabquizzz.vocab_quizz.model.word.WordLookupResult
 import com.vocabquizzz.vocab_quizz.bot.formatter.WordLookupFormatter
 import com.vocabquizzz.vocab_quizz.bot.formatter.StatisticFormatter
 

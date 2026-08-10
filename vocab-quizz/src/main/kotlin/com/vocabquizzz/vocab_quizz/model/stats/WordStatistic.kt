@@ -1,4 +1,4 @@
-package com.vocabquizzz.vocab_quizz.model
+package com.vocabquizzz.vocab_quizz.model.stats
 
 data class WordStatistic(
     val word: String,

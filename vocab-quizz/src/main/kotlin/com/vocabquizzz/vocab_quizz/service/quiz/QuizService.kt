@@ -1,8 +1,8 @@
 package com.vocabquizzz.vocab_quizz.service.quiz
 
 import org.springframework.stereotype.Service
-import com.vocabquizzz.vocab_quizz.model.Quiz
-import com.vocabquizzz.vocab_quizz.model.QuizType
+import com.vocabquizzz.vocab_quizz.model.quiz.Quiz
+import com.vocabquizzz.vocab_quizz.model.quiz.QuizType
 import com.vocabquizzz.vocab_quizz.entity.Word
 import kotlin.random.Random
 

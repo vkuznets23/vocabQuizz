@@ -1,7 +1,7 @@
 package com.vocabquizzz.vocab_quizz.service.word
 
 import org.springframework.stereotype.Service
-import com.vocabquizzz.vocab_quizz.model.QuizType
+import com.vocabquizzz.vocab_quizz.model.quiz.QuizType
 import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.entity.WordAttempt
 import com.vocabquizzz.vocab_quizz.repository.WordAttemptRepository

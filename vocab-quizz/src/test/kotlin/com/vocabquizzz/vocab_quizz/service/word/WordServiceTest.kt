@@ -2,12 +2,12 @@ package com.vocabquizzz.vocab_quizz.service.word
 
 import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.entity.Word
-import com.vocabquizzz.vocab_quizz.model.DeleteWordResult
-import com.vocabquizzz.vocab_quizz.model.WordConstraints
-import com.vocabquizzz.vocab_quizz.model.WordLookupResult
+import com.vocabquizzz.vocab_quizz.model.word.DeleteWordResult
+import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
+import com.vocabquizzz.vocab_quizz.model.word.WordLookupResult
 import com.vocabquizzz.vocab_quizz.repository.WordRepository
 import com.vocabquizzz.vocab_quizz.service.word.WordService
-import com.vocabquizzz.vocab_quizz.model.EditableField
+import com.vocabquizzz.vocab_quizz.model.word.EditableField
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock

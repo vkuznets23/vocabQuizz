@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 import com.vocabquizzz.vocab_quizz.service.session.AddWordSessionService
 import com.vocabquizzz.vocab_quizz.service.session.EditWordSessionService
 import com.vocabquizzz.vocab_quizz.service.quiz.LessonSessionService
-import com.vocabquizzz.vocab_quizz.model.CancelResult
+import com.vocabquizzz.vocab_quizz.model.session.CancelResult
 
 @Service
 class SessionCancelService(

@@ -2,7 +2,7 @@ package com.vocabquizzz.vocab_quizz.bot.handler
 
 import org.springframework.stereotype.Component
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
-import com.vocabquizzz.vocab_quizz.model.WordLookupResult
+import com.vocabquizzz.vocab_quizz.model.word.WordLookupResult
 import com.vocabquizzz.vocab_quizz.service.word.WordService
 import com.vocabquizzz.vocab_quizz.service.user.UserService
 import org.telegram.telegrambots.meta.api.objects.message.Message

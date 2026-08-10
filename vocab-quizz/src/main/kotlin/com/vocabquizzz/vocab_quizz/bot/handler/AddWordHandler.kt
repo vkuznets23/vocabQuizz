@@ -1,7 +1,7 @@
 package com.vocabquizzz.vocab_quizz.bot.handler
 
 import org.springframework.stereotype.Component
-import com.vocabquizzz.vocab_quizz.model.AddWordStep.*
+import com.vocabquizzz.vocab_quizz.model.word.AddWordStep.*
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import com.vocabquizzz.vocab_quizz.service.session.AddWordSessionService
 import com.vocabquizzz.vocab_quizz.service.word.WordService

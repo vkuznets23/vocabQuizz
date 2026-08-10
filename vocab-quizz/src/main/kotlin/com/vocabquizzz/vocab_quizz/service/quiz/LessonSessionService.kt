@@ -1,10 +1,10 @@
 package com.vocabquizzz.vocab_quizz.service.quiz
 
 import org.springframework.stereotype.Service
-import com.vocabquizzz.vocab_quizz.model.QuizSession
-import com.vocabquizzz.vocab_quizz.model.QuizType
-import com.vocabquizzz.vocab_quizz.model.WordConstraints
-import com.vocabquizzz.vocab_quizz.model.ActivePoll
+import com.vocabquizzz.vocab_quizz.model.quiz.QuizSession
+import com.vocabquizzz.vocab_quizz.model.quiz.QuizType
+import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
+import com.vocabquizzz.vocab_quizz.model.quiz.ActivePoll
 
 @Service
 class LessonSessionService {

@@ -1,4 +1,4 @@
-package com.vocabquizzz.vocab_quizz.model
+package com.vocabquizzz.vocab_quizz.model.word
 
 import com.vocabquizzz.vocab_quizz.entity.Word
     

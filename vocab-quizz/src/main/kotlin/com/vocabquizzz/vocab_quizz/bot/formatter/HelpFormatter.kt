@@ -1,7 +1,7 @@
 package com.vocabquizzz.vocab_quizz.bot.formatter
 
 import org.springframework.stereotype.Component
-import com.vocabquizzz.vocab_quizz.model.WordConstraints
+import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
 
 @Component
 class HelpFormatter {

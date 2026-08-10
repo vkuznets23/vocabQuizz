@@ -1,4 +1,4 @@
-package com.vocabquizzz.vocab_quizz.model
+package com.vocabquizzz.vocab_quizz.model.quiz
 
 enum class QuizType {
     WORD_TO_DEFINITION,

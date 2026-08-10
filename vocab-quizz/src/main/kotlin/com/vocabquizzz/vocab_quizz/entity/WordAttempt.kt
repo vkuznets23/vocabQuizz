@@ -2,7 +2,7 @@ package com.vocabquizzz.vocab_quizz.entity
 
 import jakarta.persistence.*
 import java.time.LocalDateTime
-import com.vocabquizzz.vocab_quizz.model.QuizType
+import com.vocabquizzz.vocab_quizz.model.quiz.QuizType
 
 @Entity
 @Table(name = "word_attempts")

@@ -1,7 +1,7 @@
 package com.vocabquizzz.vocab_quizz.service.session
 
 import org.springframework.stereotype.Service
-import com.vocabquizzz.vocab_quizz.model.EditWordSession
+import com.vocabquizzz.vocab_quizz.model.session.EditWordSession
 
 
 @Service

@@ -1,4 +1,4 @@
-package com.vocabquizzz.vocab_quizz.model
+package com.vocabquizzz.vocab_quizz.model.session
 
 sealed interface CancelResult {
     val message: String

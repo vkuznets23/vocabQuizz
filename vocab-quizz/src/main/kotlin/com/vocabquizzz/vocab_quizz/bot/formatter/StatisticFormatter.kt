@@ -1,8 +1,8 @@
 package com.vocabquizzz.vocab_quizz.bot.formatter
 
 import org.springframework.stereotype.Component
-import com.vocabquizzz.vocab_quizz.model.UserStatistic
-import com.vocabquizzz.vocab_quizz.model.WordStatistic
+import com.vocabquizzz.vocab_quizz.model.stats.UserStatistic
+import com.vocabquizzz.vocab_quizz.model.stats.WordStatistic
 
 @Component
 class StatisticFormatter {
