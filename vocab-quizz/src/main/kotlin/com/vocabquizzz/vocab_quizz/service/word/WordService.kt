@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import com.vocabquizzz.vocab_quizz.model.WordConstraints
 import com.vocabquizzz.vocab_quizz.model.WordLookupResult
+import com.vocabquizzz.vocab_quizz.model.DeleteWordResult
 
 
 @Service
@@ -145,8 +146,9 @@ class WordService(
     fun deleteWord(
         user: User,
         word: String
-    ): Boolean {
-        return wordRepository.deleteByUserAndWordIgnoreCase(user, word.trim()) > 0
+    ): DeleteWordResult {
+        val deleted = wordRepository.deleteByUserAndWordIgnoreCase(user, word.trim()) > 0
+        return if (deleted) DeleteWordResult.Deleted else DeleteWordResult.NotFound
     }
 
     @Transactional

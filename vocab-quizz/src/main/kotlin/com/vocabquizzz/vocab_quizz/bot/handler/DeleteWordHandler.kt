@@ -34,6 +34,7 @@ class DeleteWordHandler(
 
         when (val result = wordService.lookupWord(user, query)) {
             is WordLookupResult.Found -> {
+                // possible race condition here??
                 wordService.deleteWord(user, result.word.word)
                 telegramGateway.sendText(chatId, "✅ '${result.word.word}' deleted.")
             }

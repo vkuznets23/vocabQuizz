@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.bot
 import com.vocabquizzz.vocab_quizz.bot.BotDispatcher
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import org.springframework.context.annotation.Profile
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery
