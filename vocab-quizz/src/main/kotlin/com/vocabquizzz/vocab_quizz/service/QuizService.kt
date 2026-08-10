@@ -5,48 +5,16 @@ import com.vocabquizzz.vocab_quizz.model.QuizType
 import org.springframework.stereotype.Service
 import kotlin.random.Random
 import com.vocabquizzz.vocab_quizz.entity.Word
-import com.vocabquizzz.vocab_quizz.entity.User
-import com.vocabquizzz.vocab_quizz.repository.WordRepository
 
 
-/**
- * Generates different quiz types from a user's vocabulary.
- *
- * Maintains a shuffled in-memory deck for each user so that words are
- * presented in random order without repetition until the deck is exhausted.
- */
- 
 @Service
 class QuizService(
-    private val wordRepository: WordRepository,
 
 ) {
-    private val decks = mutableMapOf<Long, MutableList<Word>>()
 
-    private fun otherWords(word: Word): List<Word> =
-        wordRepository.findAllByUser(word.user) // TODO: think about this in the future
-            .filter { it.id != word.id }
+    fun generateQuiz(word: Word, otherWords: List<Word>): Quiz {
 
-    fun getQuiz(user: User): Quiz {
-        val allWords = wordRepository.findAllByUser(user)
-
-        require(allWords.size >= 4) {
-            "At least 4 words are required to start a quiz."
-        }
-
-        var deck = decks[user.id]
-
-        if (deck == null || deck.isEmpty()) {
-            deck = wordRepository.findAllByUser(user)
-                .shuffled()
-                .toMutableList()
-
-            decks[user.id] = deck
-        }
-
-        val word = deck.removeFirst()
-
-        val quizzes = mutableListOf<(Word) -> Quiz>(
+        val quizzes = mutableListOf<(Word, List<Word>) -> Quiz>(
             ::wordToDefinitionQuiz,
             ::definitionToWordQuiz,
             ::trueFalseQuiz
@@ -56,11 +24,11 @@ class QuizService(
             quizzes += ::sentenceQuiz
         }
 
-        return quizzes.random()(word)
+        return quizzes.random()(word, otherWords)
     }
 
-    private fun definitionToWordQuiz(word: Word): Quiz {
-        val wrong = otherWords(word)
+    private fun definitionToWordQuiz(word: Word, otherWords: List<Word>): Quiz {
+        val wrong = otherWords
             .shuffled()
             .take(3)
             .map { it.word }
@@ -77,8 +45,8 @@ class QuizService(
 
     }
 
-    private fun wordToDefinitionQuiz(word: Word): Quiz {
-        val wrong = otherWords(word)
+    private fun wordToDefinitionQuiz(word: Word, otherWords: List<Word>): Quiz {
+        val wrong = otherWords
             .shuffled()
             .take(3)
             .map { it.definition }
@@ -94,14 +62,14 @@ class QuizService(
         )
     }
 
-    private fun trueFalseQuiz(word: Word): Quiz {
+    private fun trueFalseQuiz(word: Word, otherWords: List<Word>): Quiz {
         val isTrue = Random.nextBoolean()
 
         val definition = 
             if (isTrue) {
                 word.definition
             } else {
-                otherWords(word).random().definition
+                otherWords.random().definition
             }
         
         return Quiz(
@@ -118,8 +86,8 @@ class QuizService(
         )
     }
 
-    private fun sentenceQuiz(word: Word): Quiz {
-        val wrong = otherWords(word)
+    private fun sentenceQuiz(word: Word, otherWords: List<Word>): Quiz {
+        val wrong = otherWords
             .shuffled()
             .take(3)
             .map { it.word }

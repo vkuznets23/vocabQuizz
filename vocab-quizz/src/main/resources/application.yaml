@@ -8,6 +8,8 @@ spring:
 
 telegram:
   bot:
+    token: ${TELEGRAM_BOT_TOKEN}
+    username: ${TELEGRAM_BOT_USERNAME:vocabquizzz_bot}
 
 quiz:
   cron: "0 0 * * * *"

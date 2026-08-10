@@ -2,22 +2,23 @@ package com.vocabquizzz.vocab_quizz.bot.handler
 
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import com.vocabquizzz.vocab_quizz.service.UserService
-import com.vocabquizzz.vocab_quizz.service.QuizService
-import com.vocabquizzz.vocab_quizz.service.WordAttemptService
-import com.vocabquizzz.vocab_quizz.service.WordService
 import com.vocabquizzz.vocab_quizz.service.LessonSessionService
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
+import com.vocabquizzz.vocab_quizz.service.QuizFlowService
+import com.vocabquizzz.vocab_quizz.bot.formatter.QuizFormatter
+import com.vocabquizzz.vocab_quizz.model.StartQuizResult
+import com.vocabquizzz.vocab_quizz.model.AnswerResult
+import com.vocabquizzz.vocab_quizz.model.Quiz
 
-@Service
+@Component
 class QuizHandler(
+    private val quizFlowService: QuizFlowService,
     private val lessonSessionService: LessonSessionService,
-    private val quizService: QuizService,
-    private val wordAttemptService: WordAttemptService,
-    private val wordService: WordService,
     private val userService: UserService,
-    private val telegramGateway: TelegramGateway
+    private val telegramGateway: TelegramGateway,
+    private val quizFormatter: QuizFormatter,
 ) {
 
     fun handleQuiz(message: Message) {
@@ -25,90 +26,46 @@ class QuizHandler(
         val chatId = message.chatId.toString()
         val user = userService.getOrCreate(chatId.toLong())
 
-        if (wordService.countWords(user) < 4) {
-            telegramGateway.sendText(
-                chatId,
-                "You need at least 4 words before starting a quiz."
-            )
-            return
+        when (val result = quizFlowService.startQuiz(chatId, user)) {
+            is StartQuizResult.Ready -> sendQuiz(result.chatId, result.quiz)
+            StartQuizResult.NotEnoughWords ->
+                telegramGateway.sendText(chatId, quizFormatter.notEnoughWords())
+            StartQuizResult.AlreadyRunning ->
+                telegramGateway.sendText(chatId, quizFormatter.alreadyRunning())
         }
-
-        startLesson(chatId)
     }
 
-    fun startLesson(chatId: String){
-        if (!lessonSessionService.startLesson(chatId)) {
-
-            telegramGateway.sendText(
-                chatId,
-                "You're already taking a quiz 😊"
-            )
-
-            return
-        }
-
-        sendQuiz(chatId)
-    }
-
-    private fun sendQuiz(chatId: String) {
-
+    fun startLesson(chatId: String) {  // for QuizScheduler
         val user = userService.getOrCreate(chatId.toLong())
-        val quiz = quizService.getQuiz(user)
+        when (val result = quizFlowService.startQuiz(chatId, user)) {
+            is StartQuizResult.Ready -> sendQuiz(result.chatId, result.quiz)
+            else -> return
+        }
+    }
 
-        val pollId = telegramGateway.sendQuiz(
-            chatId,
-            quiz
-        )
 
+    fun handlePoll(answer: PollAnswer) {
+        val selectedOption = answer.optionIds.first()
+        when (val result = quizFlowService.processAnswer(answer.pollId, selectedOption)) {
+            is AnswerResult.NextQuestion -> sendQuiz(result.chatId, result.quiz)
+            is AnswerResult.Finished ->
+                telegramGateway.sendText(
+                    result.chatId,
+                    quizFormatter.finished(result.score, result.total),
+                )
+            AnswerResult.UnknownPoll -> return
+        }
+    }
+
+    private fun sendQuiz(chatId: String, quiz: Quiz) {
+        val pollId = telegramGateway.sendQuiz(chatId, quiz)
         lessonSessionService.registerPoll(
             pollId = pollId,
             chatId = chatId,
             wordId = quiz.wordId,
             quizType = quiz.type,
-            correctOption = quiz.options.indexOf(quiz.correct)
+            correctOption = quiz.options.indexOf(quiz.correct),
         )
-    }
-
-    private fun finishLesson(chatId: String) {
-
-        val session = lessonSessionService.finishLesson(chatId)
-
-        telegramGateway.sendText(
-            chatId,
-            "🎉 Quiz finished!\nScore: ${session?.score}/5"
-        )
-    }
-
-
-    fun handlePoll(answer: PollAnswer) {
-
-        val activePoll =
-            lessonSessionService.finishPoll(answer.pollId)
-                ?: return
-
-        val selectedOption = answer.optionIds.first()
-
-        val correct = selectedOption == activePoll.correctOption
-
-        val hasNext = lessonSessionService.answer(
-            chatId = activePoll.chatId,
-            correct = correct
-        )
-
-        val user = userService.getOrCreate(activePoll.chatId.toLong())
-
-        wordAttemptService.recordAttempt(
-            user = user,
-            wordId = activePoll.wordId,
-            quizType = activePoll.quizType,
-            correct = correct
-        )
-
-        if (hasNext) {
-            sendQuiz(activePoll.chatId)
-        } else {
-            finishLesson(activePoll.chatId)
-        }
     }
 
 }

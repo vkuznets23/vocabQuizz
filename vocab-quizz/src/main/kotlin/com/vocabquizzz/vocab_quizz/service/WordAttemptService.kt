@@ -11,8 +11,7 @@ import com.vocabquizzz.vocab_quizz.service.WordService
 @Service
 class WordAttemptService(
     private val wordAttemptRepository: WordAttemptRepository,
-    private val wordService: WordService
-
+    private val wordService: WordService,
 ){
 
     fun recordAttempt(user: User, wordId: Long, quizType: QuizType, correct: Boolean): WordAttempt {

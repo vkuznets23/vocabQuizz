@@ -4,6 +4,7 @@ import com.vocabquizzz.vocab_quizz.model.QuizSession
 import com.vocabquizzz.vocab_quizz.model.QuizType
 import com.vocabquizzz.vocab_quizz.model.ActivePoll
 import org.springframework.stereotype.Service
+import com.vocabquizzz.vocab_quizz.model.WordConstraints
 
 
 /**
@@ -20,7 +21,8 @@ class LessonSessionService {
     private val sessions = mutableMapOf<String, QuizSession>()
     private val activePolls = mutableMapOf<String, ActivePoll>()
 
-    fun startLesson(chatId: String, questions: Int = 5): Boolean {
+    fun startLesson(chatId: String, questions: Int = WordConstraints.QUESTIONS_PER_LESSON,
+    ): Boolean {
         if (sessions.containsKey(chatId)) {
             return false
         }
