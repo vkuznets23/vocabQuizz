@@ -1,8 +1,9 @@
-package com.vocabquizzz.vocab_quizz.service
+package com.vocabquizzz.vocab_quizz.service.quiz
 
 import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.entity.Word
 import org.springframework.stereotype.Service
+import com.vocabquizzz.vocab_quizz.service.word.WordService
 
 @Service
 class QuizDeckService(

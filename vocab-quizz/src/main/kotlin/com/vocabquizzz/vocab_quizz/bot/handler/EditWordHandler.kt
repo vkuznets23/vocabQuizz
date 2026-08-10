@@ -1,9 +1,9 @@
 package com.vocabquizzz.vocab_quizz.bot.handler
 
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
-import com.vocabquizzz.vocab_quizz.service.WordService
-import com.vocabquizzz.vocab_quizz.service.UserService
-import com.vocabquizzz.vocab_quizz.service.EditWordSessionService
+import com.vocabquizzz.vocab_quizz.service.word.WordService
+import com.vocabquizzz.vocab_quizz.service.user.UserService
+import com.vocabquizzz.vocab_quizz.service.session.EditWordSessionService
 import com.vocabquizzz.vocab_quizz.model.EditableField
 import com.vocabquizzz.vocab_quizz.model.EditWordStep.*
 import org.springframework.stereotype.Component

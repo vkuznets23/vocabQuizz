@@ -2,8 +2,8 @@ package com.vocabquizzz.vocab_quizz.bot.handler
 
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
 import org.springframework.stereotype.Component
-import com.vocabquizzz.vocab_quizz.service.UserService
-import com.vocabquizzz.vocab_quizz.service.WordService
+import com.vocabquizzz.vocab_quizz.service.user.UserService
+import com.vocabquizzz.vocab_quizz.service.word.WordService
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import com.vocabquizzz.vocab_quizz.bot.formatter.AllWordsListFormatter
 

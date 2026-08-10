@@ -1,7 +1,7 @@
 package com.vocabquizzz.vocab_quizz.bot.handler
 
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
-import com.vocabquizzz.vocab_quizz.service.SessionCancelService
+import com.vocabquizzz.vocab_quizz.service.session.SessionCancelService
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
 

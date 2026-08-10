@@ -1,12 +1,12 @@
 package com.vocabquizzz.vocab_quizz.bot.handler
 
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
-import com.vocabquizzz.vocab_quizz.service.UserService
-import com.vocabquizzz.vocab_quizz.service.LessonSessionService
+import com.vocabquizzz.vocab_quizz.service.user.UserService
+import com.vocabquizzz.vocab_quizz.service.quiz.LessonSessionService
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
-import com.vocabquizzz.vocab_quizz.service.QuizFlowService
+import com.vocabquizzz.vocab_quizz.service.quiz.QuizFlowService
 import com.vocabquizzz.vocab_quizz.bot.formatter.QuizFormatter
 import com.vocabquizzz.vocab_quizz.model.StartQuizResult
 import com.vocabquizzz.vocab_quizz.model.AnswerResult

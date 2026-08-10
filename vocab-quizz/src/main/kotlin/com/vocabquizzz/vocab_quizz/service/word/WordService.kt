@@ -1,4 +1,4 @@
-package com.vocabquizzz.vocab_quizz.service
+package com.vocabquizzz.vocab_quizz.service.word
 
 import org.springframework.stereotype.Service
 import com.vocabquizzz.vocab_quizz.entity.Word

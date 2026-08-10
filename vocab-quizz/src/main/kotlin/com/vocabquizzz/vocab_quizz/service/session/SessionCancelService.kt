@@ -1,9 +1,9 @@
-package com.vocabquizzz.vocab_quizz.service
+package com.vocabquizzz.vocab_quizz.service.session
 
 import org.springframework.stereotype.Service
-import com.vocabquizzz.vocab_quizz.service.AddWordSessionService
-import com.vocabquizzz.vocab_quizz.service.EditWordSessionService
-import com.vocabquizzz.vocab_quizz.service.LessonSessionService
+import com.vocabquizzz.vocab_quizz.service.session.AddWordSessionService
+import com.vocabquizzz.vocab_quizz.service.session.EditWordSessionService
+import com.vocabquizzz.vocab_quizz.service.quiz.LessonSessionService
 import com.vocabquizzz.vocab_quizz.model.CancelResult
 
 @Service

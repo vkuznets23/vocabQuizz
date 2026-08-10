@@ -25,28 +25,6 @@ BotDispatcher (router)
    └── CallbackQuery → AllWordsCallbackHandler
 ```
 
-```mermaid
-flowchart TB
-    TG[Telegram] --> TB[TelegramBot]
-    TB --> BD[BotDispatcher]
-
-    BD --> H[Handlers]
-    BD --> PA[PollAnswer]
-    BD --> CB[CallbackQuery]
-
-    PA --> QH[QuizHandler]
-    CB --> AWH[AllWordsCallbackHandler]
-
-    H --> S[Services]
-    H --> F[Formatters]
-    H --> GW[TelegramGateway]
-
-    S --> R[Repositories]
-    R --> DB[(PostgreSQL)]
-
-    GW --> TG
-```
-
 ---
 
 ## Routing (`BotDispatcher`)
