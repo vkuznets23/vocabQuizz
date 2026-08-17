@@ -24,8 +24,9 @@ BotDispatcher (router)
    ├── PollAnswer → QuizHandler
    └── CallbackQuery → AllWordsCallbackHandler, SettingsCallbackHandler
 
-QuizScheduler (@Scheduled)
-   └── QuizHandler.startLesson (auto-quiz, stub — see below)
+QuizScheduler (@Scheduled, quiz.cron)
+   ├── UserQuizSettingsService.findEnabled + isEligibleNow
+   └── QuizHandler.startLesson → markQuizSent on success
 ```
 
 ---
@@ -61,7 +62,7 @@ QuizScheduler (@Scheduled)
 | Model      | `model`         | DTOs, constraints, session state, result types |
 | Repository | `repository`    | Database access                                |
 | Gateway    | `bot.gateway`   | Telegram API                                   |
-| Scheduler  | `bot.scheduler` | Cron-triggered auto-quiz (stub)                |
+| Scheduler  | `bot.scheduler` | Cron-triggered auto-quiz for enabled users     |
 
 ---
 
@@ -309,6 +310,10 @@ QuizHandler also:
   ├── QuizFormatter            error / finished messages
   ├── TelegramGateway          sendQuiz, sendText
   └── LessonSessionService.registerPoll (after poll is sent)
+
+QuizScheduler (auto-quiz):
+  ├── UserQuizSettingsService  findEnabled, isEligibleNow, markQuizSent
+  └── QuizHandler.startLesson  same quiz flow as /quiz, returns Boolean
 ```
 
 ### Session state (`QuizSession`)
@@ -370,33 +375,44 @@ Steps:
   - old poll buttons → UnknownPoll (silently ignored)
 ```
 
-### Scheduled quiz
+### Scheduled quiz (auto-quiz)
 
-**Current (stub):**
-
-```
-QuizScheduler (@Scheduled cron from quiz.cron in application.yaml)
-  → QuizHandler.startLesson("410458864")   // hardcoded chatId
-  → same startQuiz flow as /quiz (uses user settings for question count)
-```
-
-**Planned:**
+Triggered by `QuizScheduler` on `quiz.cron` from `application.yaml` (default: every hour).
 
 ```
-QuizScheduler
+QuizScheduler.sendQuiz()
   → UserQuizSettingsService.findEnabled()
-  → for each settings where isEligibleNow(settings):
-       chatId = settings.user.telegramUserId
-       QuizHandler.startLesson(chatId)
-       on success → markQuizSent(settings)
+       (repository loads settings + user via @EntityGraph)
+  → filter isEligibleNow(settings)
+  → for each eligible settings:
+       chatId = settings.user.telegramUserId.toString()
+       if QuizHandler.startLesson(chatId):
+         markQuizSent(settings)
 ```
+
+`QuizHandler.startLesson` vs `handleQuiz`:
+
+| Entry point    | On `NotEnoughWords` / `AlreadyRunning`      | Returns        |
+| -------------- | --------------------------------------------- | -------------- |
+| `handleQuiz`   | sends error message to user                   | —              |
+| `startLesson`  | silent (no message)                           | `false`        |
+| both           | on `Ready` → sendQuiz + registerPoll          | `true` / poll  |
 
 `isEligibleNow` checks:
 
 - current time within `windowStart`–`windowEnd` in user's `timezone`
-- at least `intervalHours` since `lastQuizSentAt` (or never sent)
+- at least `intervalHours` since `lastQuizSentAt` (or `null` → eligible)
 
-`quiz.cron` = global wake-up interval; per-user rules live in DB.
+`markQuizSent` runs **only** when the poll was actually sent. Failures (not enough words, quiz already running) do not update `lastQuizSentAt`.
+
+**chatId:** in private chats, `chatId == user.telegramUserId`. Settings store `user_id` (FK to `users`); no separate `chat_id` column.
+
+**Two-level scheduling:**
+
+| Level | Where | Role |
+| ----- | ----- | ---- |
+| Global wake-up | `quiz.cron` in yaml | how often the app checks all users |
+| Per-user rules | `user_quiz_settings` | who gets a quiz and when |
 
 ---
 
@@ -406,14 +422,14 @@ Stored in `user_quiz_settings`. Created on first `UserService.getOrCreate`.
 
 | Field                 | Default           | Used by                          |
 | --------------------- | ----------------- | -------------------------------- |
-| `enabled`             | `false`           | scheduler (planned)              |
+| `enabled`             | `false`           | scheduler (`findEnabled`)        |
 | `intervalHours`       | `2`               | scheduler eligibility            |
 | `windowStart` / `End` | `09:00` – `18:00` | scheduler eligibility            |
 | `timezone`            | `UTC`             | scheduler eligibility            |
 | `questionsPerLesson`  | `5`               | `/quiz`, `/help`, session `total`|
 | `lastQuizSentAt`      | `null`            | scheduler eligibility            |
 
-See also: `docs/database.md`, `docs/challange1.md`.
+See also: `docs/database.md`, `docs/challenges-jpa-user-settings.md`.
 
 ---
 
@@ -441,6 +457,7 @@ Write paths:
   /settings       → UserQuizSettingsService  → UserQuizSettingsRepository
   Quiz answer     → WordAttemptService       → WordAttemptRepository
   First message   → UserService              → UserRepository + UserQuizSettingsRepository
+  Auto-quiz sent  → UserQuizSettingsService.markQuizSent → UserQuizSettingsRepository
 
 Read paths:
   /help, /quiz    → UserQuizSettingsService.getSettings
@@ -448,5 +465,5 @@ Read paths:
   /stat           → StatisticService         → WordAttemptRepository
   /words          → WordService.getWords (paginated)
   /quiz           → WordService.getAllWords (distractors)
-  Scheduler (planned) → findByEnabledTrue + isEligibleNow
+  Scheduler       → findEnabled + isEligibleNow (user loaded via @EntityGraph)
 ```
