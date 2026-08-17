@@ -13,19 +13,20 @@ Main relationships:
 
 - one user → many words;
 - one user → many word attempts;
-- one user → one quiz settings row (optional until first `/settings` or `/quiz`).
+- one user → one quiz settings row (created on first registration).
 
 <img width="685" height="304" alt="image" src="https://github.com/user-attachments/assets/ada4574f-a975-4069-848a-7a3407506814" />
 
 ## Migrations
 
-| Version | File                                 | Description          |
-| ------- | ------------------------------------ | -------------------- |
-| V1      | `V1__create_users_table.sql`         | `users`              |
-| V2      | `V2__create_words_table.sql`         | `words`              |
-| V3      | `V3__create_words_attempt_table.sql` | `word_attempts`      |
-| V4      | `V4__seed_initial_words.sql`         | seed data            |
-| V5      | `V5__create_user_quiz_settings.sql`  | `user_quiz_settings` |
+| Version | File                                  | Description                          |
+| ------- | ------------------------------------- | ------------------------------------ |
+| V1      | `V1__create_users_table.sql`          | `users`                              |
+| V2      | `V2__create_words_table.sql`          | `words`                              |
+| V3      | `V3__create_words_attempt_table.sql`  | `word_attempts`                      |
+| V4      | `V4__seed_initial_words.sql`          | seed data                            |
+| V5      | `V5__create_user_quiz_settings.sql`   | `user_quiz_settings`                 |
+| V6      | `V6__backfill_user_quiz_settings.sql` | backfill settings for existing users |
 
 ---
 
@@ -82,11 +83,45 @@ Table word_attempts {
 
 ## user_quiz_settings
 
+Per-user quiz preferences: auto-quiz on/off, send interval, daily time window, timezone, and question count per session.
+
+Each user has exactly one settings row. Primary key is `user_id` (also FK to `users.id`, `ON DELETE CASCADE`).
+
+Rows are created in `UserService.getOrCreate` when a new Telegram user registers. Migration V6 backfills settings for users who existed before V5.
+
+Used by:
+
+- `/settings` — read and update preferences;
+- `/quiz`, `/help` — `questions_per_lesson` for session size;
+- scheduler — `enabled`, interval, window, timezone, `last_quiz_sent_at` for eligibility.
+
+```dbml
+Table user_quiz_settings {
+  user_id bigint [pk, ref: > users.id]
+  enabled boolean [not null, default: false]
+  interval_hours int [not null, default: 2, note: '1–3 hours']
+  window_start time [not null, default: '09:00']
+  window_end time [not null, default: '18:00']
+  timezone varchar(64) [not null, default: 'UTC']
+  questions_per_lesson int [not null, default: 5, note: '5–10 questions']
+  last_quiz_sent_at timestamp [null]
+  updated_at timestamp [not null, default: `now()`]
+}
+```
+
+| Column                 | Default           | Meaning                                             |
+| ---------------------- | ----------------- | --------------------------------------------------- |
+| `enabled`              | `false`           | Whether the scheduler sends auto-quizzes            |
+| `interval_hours`       | `2`               | Minimum hours between auto-quizzes (1–3)            |
+| `window_start` / `end` | `09:00` – `18:00` | Local time range when auto-quizzes may be sent      |
+| `timezone`             | `UTC`             | IANA timezone for window and eligibility checks     |
+| `questions_per_lesson` | `5`               | Poll count per `/quiz` or auto-quiz session (5–10)  |
+| `last_quiz_sent_at`    | `null`            | Last auto-quiz timestamp; `null` means eligible now |
+| `updated_at`           | `now()`           | Last settings change                                |
+
 # Future Extensions
 
 Possible future improvements:
 
-word_attempts — stores quiz answer history;
 decks — allows grouping words into collections;
-statistics — provides learning analytics;
-next_review — supports spaced repetition learning algorithms.
+somehow make it to support spaced repetition learning algorithms.
