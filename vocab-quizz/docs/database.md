@@ -5,25 +5,35 @@
 At the first stage of the Telegram bot, we need a simple database structure to store:
 
 - Telegram users;
-- each user's personal vocabulary;
-- words with definitions;
-- examples of word usage.
+- each user's personal vocabulary (words);
+- quiz answer history;
+- per-user quiz settings (auto-quiz schedule, question count).
 
-The main idea:
+Main relationships:
 
-- one user can have many words;
-- each word belongs to exactly one user.
+- one user → many words;
+- one user → many word attempts;
+- one user → one quiz settings row (optional until first `/settings` or `/quiz`).
 
 <img width="685" height="304" alt="image" src="https://github.com/user-attachments/assets/ada4574f-a975-4069-848a-7a3407506814" />
 
+## Migrations
+
+| Version | File                                 | Description          |
+| ------- | ------------------------------------ | -------------------- |
+| V1      | `V1__create_users_table.sql`         | `users`              |
+| V2      | `V2__create_words_table.sql`         | `words`              |
+| V3      | `V3__create_words_attempt_table.sql` | `word_attempts`      |
+| V4      | `V4__seed_initial_words.sql`         | seed data            |
+| V5      | `V5__create_user_quiz_settings.sql`  | `user_quiz_settings` |
+
+---
 
 # Tables
 
 ## users
 
-The `users` table stores Telegram users.
-
-It contains the minimum information required for the bot to identify users and store their data.
+The `users` table stores Telegram users. Minimum info to identify users and link their data.
 
 ```dbml
 TABLE users {
@@ -40,15 +50,37 @@ The words table stores users' personal vocabulary.
 Each word belongs to a specific user.
 
 ```dbml
-TABLE words {
-    id integer [primary key]
-    user_id integer [not null]
-    word varchar(50) [not null]
-    definition varchar(200) [not null]
-    example varchar
-    created_at timestamp [not null, default: `now()`]
+Table words {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  word varchar(50) [not null]
+  definition text [not null]
+  example text
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (user_id, word) [unique]
+    (user_id, lower(word)) [unique]
+  }
 }
 ```
+
+## word_attempts
+
+Quiz answer history. One row per poll answer.
+
+```dbml
+Table word_attempts {
+  id bigint [pk, increment]
+  word_id bigint [not null, ref: > words.id]
+  user_id bigint [not null, ref: > users.id]
+  is_correct boolean [not null]
+  quiz_type varchar(50) [not null]
+  created_at timestamp [not null, default: `now()`]
+}
+```
+
+## user_quiz_settings
 
 # Future Extensions
 
