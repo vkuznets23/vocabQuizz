@@ -102,6 +102,7 @@ Stop: `docker compose down`.
 
 | Command     | Description                                     |
 | ----------- | ----------------------------------------------- |
+| `/start`    | Welcome text                                    |
 | `/help`     | Command list and your question count per lesson |
 | `/add`      | Add a word (guided multi-step flow)             |
 | `/edit`     | Edit an existing word                           |
