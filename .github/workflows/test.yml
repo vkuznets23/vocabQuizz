@@ -1,0 +1,29 @@
+name: Tests
+
+on:
+  push: # run tests on all branches
+
+  pull_request:
+    branches: [main] # run tests on every PR to main branch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: vocab-quizz
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon
