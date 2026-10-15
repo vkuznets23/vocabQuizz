@@ -4,10 +4,10 @@ import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.entity.Word
 import com.vocabquizzz.vocab_quizz.repository.WordAttemptRepository
 import com.vocabquizzz.vocab_quizz.service.word.WordService
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 
 class StatisticServiceTest {
     private val wordAttemptRepository: WordAttemptRepository = mock()
@@ -19,10 +19,10 @@ class StatisticServiceTest {
 
     @Test
     fun `should return correct statistics`() {
-        whenever(wordService.countWords(user)).thenReturn(25)
-        whenever(wordAttemptRepository.countAttemptedWordsInDictionary(user)).thenReturn(10)
-        whenever(wordAttemptRepository.countByUser(user)).thenReturn(54) // total attempts
-        whenever(wordAttemptRepository.countByUserAndIsCorrect(user, true)).thenReturn(40)
+        `when`(wordService.countWords(user)).thenReturn(25)
+        `when`(wordAttemptRepository.countAttemptedWordsInDictionary(user)).thenReturn(10)
+        `when`(wordAttemptRepository.countByUser(user)).thenReturn(54) // total attempts
+        `when`(wordAttemptRepository.countByUserAndIsCorrect(user, true)).thenReturn(40)
 
         val stat = statisticService.getUserStatistic(user)
 
@@ -36,10 +36,10 @@ class StatisticServiceTest {
 
     @Test
     fun `no attempts should return zero statistics`() {
-        whenever(wordService.countWords(user)).thenReturn(5)
-        whenever(wordAttemptRepository.countAttemptedWordsInDictionary(user)).thenReturn(0)
-        whenever(wordAttemptRepository.countByUser(user)).thenReturn(0)
-        whenever(wordAttemptRepository.countByUserAndIsCorrect(user, true)).thenReturn(0)
+        `when`(wordService.countWords(user)).thenReturn(5)
+        `when`(wordAttemptRepository.countAttemptedWordsInDictionary(user)).thenReturn(0)
+        `when`(wordAttemptRepository.countByUser(user)).thenReturn(0)
+        `when`(wordAttemptRepository.countByUserAndIsCorrect(user, true)).thenReturn(0)
 
         val stat = statisticService.getUserStatistic(user)
         assertEquals(5, stat.totalWords)
@@ -52,8 +52,8 @@ class StatisticServiceTest {
 
     @Test
     fun `getStatisticsForWord should return correct statistics`() {
-        whenever(wordAttemptRepository.countByWord(word)).thenReturn(10)
-        whenever(wordAttemptRepository.countByWordAndIsCorrect(word, true)).thenReturn(7)
+        `when`(wordAttemptRepository.countByWord(word)).thenReturn(10)
+        `when`(wordAttemptRepository.countByWordAndIsCorrect(word, true)).thenReturn(7)
 
         val stat = statisticService.getStatisticForWord(word)
 
@@ -66,8 +66,8 @@ class StatisticServiceTest {
 
     @Test
     fun `no attempts should return zero statistics for word`() {
-        whenever(wordAttemptRepository.countByWord(word)).thenReturn(0)
-        whenever(wordAttemptRepository.countByWordAndIsCorrect(word, true)).thenReturn(0)
+        `when`(wordAttemptRepository.countByWord(word)).thenReturn(0)
+        `when`(wordAttemptRepository.countByWordAndIsCorrect(word, true)).thenReturn(0)
 
         val stat = statisticService.getStatisticForWord(word)
         assertEquals(0.0, stat.accuracy)

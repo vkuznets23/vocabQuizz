@@ -17,7 +17,7 @@ Telegram bot for **personal vocabulary** and **poll-based quizzes**. Users maint
 | Framework   | Spring Boot 3 (JPA, validation, scheduling)     |
 | Database    | PostgreSQL 17, Flyway                           |
 | Integration | Telegram Bots Java library (long polling)       |
-| Tests       | JUnit 5, Mockito-Kotlin, H2 (integration tests) |
+| Tests       | JUnit 5, Mockito, H2 (unit + Spring smoke test) |
 | Run         | Gradle, Docker Compose                          |
 
 ## Architecture (short)
@@ -33,7 +33,7 @@ QuizScheduler (@Scheduled) → enabled users → QuizHandler (same flow as /quiz
 
 Session state for `/add`, `/edit`, and active quizzes lives in memory (single-instance bot). Persistent data: users, words, attempts, settings.
 
-More detail: [docs/flow.md](docs/flow.md), [docs/database.md](docs/database.md), [docs/challenges-jpa-user-settings.md](docs/challenges-jpa-user-settings.md).
+More detail: [vocab-quizz/docs/flow.md](vocab-quizz/docs/flow.md), [vocab-quizz/docs/database.md](vocab-quizz/docs/database.md), [vocab-quizz/docs/challenges-jpa-user-settings.md](vocab-quizz/docs/challenges-jpa-user-settings.md)
 
 ## Prerequisites
 
@@ -118,10 +118,37 @@ You need at least **4 words** before `/quiz` works. Question count per lesson co
 ## Tests
 
 ```bash
+cd vocab-quizz
 ./gradlew test
 ```
 
-Tests use an in-memory H2 profile; Flyway is disabled in tests, scheduling and Telegram are stubbed off.
+Force a full re-run (ignore cache): `./gradlew test --rerun-tasks`  
+HTML report: `vocab-quizz/build/reports/tests/test/index.html`
+
+**Setup:** H2 in-memory DB for `@SpringBootTest` only; Flyway off; Telegram and scheduler disabled in `src/test/resources/application.yaml`. Most tests are **unit tests** with Mockito mocks (no real Postgres or bot token).
+
+**Mocking style:** we use the **Java Mockito API**, not mockito-kotlin helpers:
+
+```kotlin
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
+
+private val wordService: WordService = mock(WordService::class.java)
+
+`when`(wordService.countWords(user)).thenReturn(25)
+```
+
+Use backticks on `` `when` `` because `when` is a Kotlin keyword. `verify(...)` comes from `org.mockito.Mockito.verify` where needed.
+
+| Test class                   | What it checks                                  |
+| ---------------------------- | ----------------------------------------------- |
+| `VocabQuizzApplicationTests` | Spring context loads                            |
+| `WordServiceTest`            | Words: validation, CRUD, lookup                 |
+| `QuizServiceTest`            | Quiz generation (options, types)                |
+| `QuizFlowServiceTest`        | Start/finish quiz flow, attempts, settings mock |
+| `StatisticServiceTest`       | User and per-word stats                         |
+
+**Not covered yet:** settings service rules, scheduler, handlers, Flyway against PostgreSQL.
 
 ## Project layout
 
@@ -136,12 +163,12 @@ src/main/kotlin/.../
 src/main/resources/
   application.yaml
   db/migration/ Flyway SQL (V1–V6)
-docs/           flow, database, JPA notes
+vocab-quizz/docs/  flow, database, JPA notes, test troubleshooting
 ```
 
 ## Interview talking points
 
 - **Why long polling:** simple deployment, no public HTTPS webhook for a side project.
-- **Settings 1:1 with users:** shared PK (`user_id`), `@OneToOne` + `@MapsId`; create settings on registration — see `docs/challenges-jpa-user-settings.md`.
-- **Quiz flow:** deck shuffle, distractors from other words, poll registration, attempts persisted on each answer — see `docs/flow.md`.
+- **Settings 1:1 with users:** shared PK (`user_id`), `@OneToOne` + `@MapsId`; create settings on registration — see `vocab-quizz/docs/challenges-jpa-user-settings.md`.
+- **Quiz flow:** deck shuffle, distractors from other words, poll registration, attempts persisted on each answer — see `vocab-quizz/docs/flow.md`.
 - **Auto-quiz eligibility:** `enabled`, local time window + timezone, minimum interval since `last_quiz_sent_at`.
