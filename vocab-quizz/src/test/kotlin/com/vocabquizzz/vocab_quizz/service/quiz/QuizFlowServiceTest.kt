@@ -1,59 +1,68 @@
 package com.vocabquizzz.vocab_quizz.service.quiz
 
 import com.vocabquizzz.vocab_quizz.entity.User
+import com.vocabquizzz.vocab_quizz.entity.UserQuizSettings
 import com.vocabquizzz.vocab_quizz.entity.Word
 import com.vocabquizzz.vocab_quizz.model.quiz.*
-import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
+import com.vocabquizzz.vocab_quizz.service.UserQuizSettingsService
+import com.vocabquizzz.vocab_quizz.service.user.UserService
 import com.vocabquizzz.vocab_quizz.service.word.WordAttemptService
 import com.vocabquizzz.vocab_quizz.service.word.WordService
-import com.vocabquizzz.vocab_quizz.service.user.UserService
-import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 
 class QuizFlowServiceTest {
 
-    private val wordService: WordService = mock()
-    private val userService: UserService = mock()
-    private val wordAttemptService: WordAttemptService = mock()
+    private val wordService: WordService = mock(WordService::class.java)
+    private val userService: UserService = mock(UserService::class.java)
+    private val wordAttemptService: WordAttemptService = mock(WordAttemptService::class.java)
+    private val settingsService: UserQuizSettingsService = mock(UserQuizSettingsService::class.java)
 
     private val quizService = QuizService()
     private val lessonSessionService = LessonSessionService()
     private val quizDeckService = QuizDeckService(wordService)
 
-    private val quizFlowService = QuizFlowService(
-        wordService = wordService,
-        quizService = quizService,
-        userService = userService,
-        quizDeckService = quizDeckService,
-        lessonSessionService = lessonSessionService,
-        wordAttemptService = wordAttemptService,
-    )
+    private val quizFlowService =
+            QuizFlowService(
+                    wordService = wordService,
+                    quizService = quizService,
+                    userService = userService,
+                    quizDeckService = quizDeckService,
+                    lessonSessionService = lessonSessionService,
+                    wordAttemptService = wordAttemptService,
+                    settingsService = settingsService,
+            )
 
     private val user = User(id = 1, telegramUserId = 123)
     private val chatId = "123"
 
     private fun word(id: Long, text: String) =
-        Word(id = id, user = user, word = text, definition = "def")
+            Word(id = id, user = user, word = text, definition = "def")
 
-    private val words = listOf(
-        word(1, "apple"),
-        word(2, "banana"),
-        word(3, "car"),
-        word(4, "dog"),
-    )
+    private val words =
+            listOf(
+                    word(1, "apple"),
+                    word(2, "banana"),
+                    word(3, "car"),
+                    word(4, "dog"),
+            )
 
-    private fun stubWords() {
-        whenever(wordService.hasEnoughWordsForQuiz(user)).thenReturn(true)
-        whenever(wordService.getAllWords(user)).thenReturn(words)
+    private fun stubWords(questionsPerLesson: Int = 5) {
+        `when`(wordService.hasEnoughWordsForQuiz(user)).thenReturn(true)
+        `when`(wordService.getAllWords(user)).thenReturn(words)
+        `when`(settingsService.getSettings(user))
+                .thenReturn(
+                        UserQuizSettings(user = user, questionsPerLesson = questionsPerLesson),
+                )
     }
 
     @Test
     fun `startQuiz returns NotEnoughWords when below minimum`() {
-        whenever(wordService.hasEnoughWordsForQuiz(user)).thenReturn(false)
+        `when`(wordService.hasEnoughWordsForQuiz(user)).thenReturn(false)
 
         val result = quizFlowService.startQuiz(chatId, user)
 
@@ -82,18 +91,18 @@ class QuizFlowServiceTest {
     }
 
     private fun registerPoll(
-        pollId: String = "poll-1",
-        wordId: Long = 1L,
-        correctOption: Int = 0,
-        questions: Int = 5, // how many questions in the lesson
+            pollId: String = "poll-1",
+            wordId: Long = 1L,
+            correctOption: Int = 0,
+            questions: Int = 5, // how many questions in the lesson
     ) {
         lessonSessionService.startLesson(chatId, questions = questions)
         lessonSessionService.registerPoll(
-            pollId = pollId,
-            chatId = chatId,
-            wordId = wordId,
-            quizType = QuizType.WORD_TO_DEFINITION,
-            correctOption = correctOption,
+                pollId = pollId,
+                chatId = chatId,
+                wordId = wordId,
+                quizType = QuizType.WORD_TO_DEFINITION,
+                correctOption = correctOption,
         )
     }
 
@@ -106,37 +115,38 @@ class QuizFlowServiceTest {
     @Test
     fun `processAnswer returns NextQuestion when lesson continues`() {
         registerPoll(questions = 2)
-        whenever(userService.getOrCreate(123L)).thenReturn(user)
+        `when`(userService.getOrCreate(123L)).thenReturn(user)
         stubWords()
 
         val result = quizFlowService.processAnswer("poll-1", 0)
 
         assertTrue(result is AnswerResult.NextQuestion)
         assertEquals(chatId, result.chatId)
-        verify(wordAttemptService).recordAttempt(
-            user = user,
-            wordId = 1L,
-            quizType = QuizType.WORD_TO_DEFINITION,
-            correct = true,
-        )
+        verify(wordAttemptService)
+                .recordAttempt(
+                        user = user,
+                        wordId = 1L,
+                        quizType = QuizType.WORD_TO_DEFINITION,
+                        correct = true,
+                )
     }
 
     @Test
     fun `processAnswer returns Finished on last question`() {
         registerPoll(questions = 1)
-        whenever(userService.getOrCreate(123L)).thenReturn(user)
+        `when`(userService.getOrCreate(123L)).thenReturn(user)
 
         val result = quizFlowService.processAnswer("poll-1", 0)
 
         assertTrue(result is AnswerResult.Finished)
         assertEquals(1, result.score)
-        assertEquals(WordConstraints.QUESTIONS_PER_LESSON, result.total)
+        assertEquals(1, result.total)
     }
 
     @Test
     fun `processAnswer counts wrong answer in score`() {
         registerPoll(questions = 1, correctOption = 0)
-        whenever(userService.getOrCreate(123L)).thenReturn(user)
+        `when`(userService.getOrCreate(123L)).thenReturn(user)
 
         val result = quizFlowService.processAnswer("poll-1", 1) // wrong
 
