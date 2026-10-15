@@ -35,6 +35,7 @@ QuizScheduler (@Scheduled, quiz.cron)
 
 | Update                | Route                                                                           |
 | --------------------- | ------------------------------------------------------------------------------- |
+| `/start`              | `StartHandler`                                                                  |
 | `/help`               | `HelpHandler`                                                                   |
 | `/words`              | `AllWordsHandler`                                                               |
 | `/word`               | `GetWordHandler`                                                                |
@@ -68,14 +69,15 @@ QuizScheduler (@Scheduled, quiz.cron)
 
 ## Formatters
 
-| Formatter               | Used by                                                   |
-| ----------------------- | --------------------------------------------------------- |
-| `HelpFormatter`         | `HelpHandler` (personalized `questionsPerLesson`)         |
-| `SettingsFormatter`     | `SettingsHandler`, `SettingsCallbackHandler`                |
-| `WordLookupFormatter`   | `GetWordHandler`, `DeleteWordHandler`, `StatisticHandler` |
-| `AllWordsListFormatter` | `AllWordsHandler`, `AllWordsCallbackHandler`                |
-| `StatisticFormatter`    | `StatisticHandler`                                        |
-| `QuizFormatter`         | `QuizHandler`                                             |
+| Formatter               | Used by                                                              |
+| ----------------------- | -------------------------------------------------------------------- |
+| `StartFormatter`        | `StartHandler` (welcome + quick start; points to `/help`)            |
+| `HelpFormatter`         | `HelpHandler` (full command list, personalized `questionsPerLesson`) |
+| `SettingsFormatter`     | `SettingsHandler`, `SettingsCallbackHandler`                         |
+| `WordLookupFormatter`   | `GetWordHandler`, `DeleteWordHandler`, `StatisticHandler`            |
+| `AllWordsListFormatter` | `AllWordsHandler`, `AllWordsCallbackHandler`                         |
+| `StatisticFormatter`    | `StatisticHandler`                                                   |
+| `QuizFormatter`         | `QuizHandler`                                                        |
 
 ---
 
@@ -83,22 +85,22 @@ QuizScheduler (@Scheduled, quiz.cron)
 
 ### Domain (stateless, DB-backed)
 
-| Service                   | Responsibility                                                      |
-| ------------------------- | ------------------------------------------------------------------- |
-| `WordService`             | CRUD, validation, `lookupWord`, pagination                          |
-| `UserService`             | `getOrCreate(telegramUserId)` + create default `UserQuizSettings`   |
-| `UserQuizSettingsService` | Per-user quiz prefs, eligibility checks, scheduler helpers          |
-| `StatisticService`        | Read quiz statistics                                                |
-| `WordAttemptService`      | Write quiz attempts                                                 |
+| Service                   | Responsibility                                                    |
+| ------------------------- | ----------------------------------------------------------------- |
+| `WordService`             | CRUD, validation, `lookupWord`, pagination                        |
+| `UserService`             | `getOrCreate(telegramUserId)` + create default `UserQuizSettings` |
+| `UserQuizSettingsService` | Per-user quiz prefs, eligibility checks, scheduler helpers        |
+| `StatisticService`        | Read quiz statistics                                              |
+| `WordAttemptService`      | Write quiz attempts                                               |
 
 ### Quiz
 
-| Service                | Stateful? | Responsibility                                           |
-| ---------------------- | --------- | -------------------------------------------------------- |
-| `QuizService`          | No        | Generate one `Quiz` from `Word` + distractors            |
-| `QuizDeckService`      | Yes       | Shuffled word deck per user                              |
-| `QuizFlowService`      | No        | Quiz lifecycle orchestration                             |
-| `LessonSessionService` | Yes       | `total`, `remaining`, score, active polls                |
+| Service                | Stateful? | Responsibility                                |
+| ---------------------- | --------- | --------------------------------------------- |
+| `QuizService`          | No        | Generate one `Quiz` from `Word` + distractors |
+| `QuizDeckService`      | Yes       | Shuffled word deck per user                   |
+| `QuizFlowService`      | No        | Quiz lifecycle orchestration                  |
+| `LessonSessionService` | Yes       | `total`, `remaining`, score, active polls     |
 
 ### Multi-step sessions
 
@@ -112,6 +114,19 @@ QuizScheduler (@Scheduled, quiz.cron)
 
 ## Command flows
 
+### `/start`
+
+Sent when the user taps **Start** in Telegram (sometimes with a payload: `/start ref` — routed the same via `substringBefore(" ")`).
+
+```
+StartHandler
+  → UserService.getOrCreate
+  → StartFormatter.formatStart()
+  → TelegramGateway.sendText
+```
+
+Welcome and quick start only (`/add` → 4+ words → `/quiz`, or `/help` for the full list). Does **not** load settings for message text; registration still creates default `UserQuizSettings` in `getOrCreate`.
+
 ### `/help`
 
 ```
@@ -122,7 +137,7 @@ HelpHandler
   → TelegramGateway.sendText
 ```
 
-Shows the user's current question count. Minimum words for a quiz still comes from `WordConstraints.MIN_WORDS_FOR_QUIZ`.
+Full command reference. Shows the user's current question count per lesson. Minimum words for a quiz still comes from `WordConstraints.MIN_WORDS_FOR_QUIZ`.
 
 ### `/settings`
 
@@ -318,11 +333,11 @@ QuizScheduler (auto-quiz):
 
 ### Session state (`QuizSession`)
 
-| Field       | Meaning                                      |
-| ----------- | -------------------------------------------- |
-| `total`     | Questions in this lesson (from user settings)|
-| `remaining` | Questions left (decremented after each poll) |
-| `score`     | Correct answers so far                       |
+| Field       | Meaning                                       |
+| ----------- | --------------------------------------------- |
+| `total`     | Questions in this lesson (from user settings) |
+| `remaining` | Questions left (decremented after each poll)  |
+| `score`     | Correct answers so far                        |
 
 ### Result DTOs
 
@@ -392,11 +407,11 @@ QuizScheduler.sendQuiz()
 
 `QuizHandler.startLesson` vs `handleQuiz`:
 
-| Entry point    | On `NotEnoughWords` / `AlreadyRunning`      | Returns        |
-| -------------- | --------------------------------------------- | -------------- |
-| `handleQuiz`   | sends error message to user                   | —              |
-| `startLesson`  | silent (no message)                           | `false`        |
-| both           | on `Ready` → sendQuiz + registerPoll          | `true` / poll  |
+| Entry point   | On `NotEnoughWords` / `AlreadyRunning` | Returns       |
+| ------------- | -------------------------------------- | ------------- |
+| `handleQuiz`  | sends error message to user            | —             |
+| `startLesson` | silent (no message)                    | `false`       |
+| both          | on `Ready` → sendQuiz + registerPoll   | `true` / poll |
 
 `isEligibleNow` checks:
 
@@ -409,10 +424,10 @@ QuizScheduler.sendQuiz()
 
 **Two-level scheduling:**
 
-| Level | Where | Role |
-| ----- | ----- | ---- |
-| Global wake-up | `quiz.cron` in yaml | how often the app checks all users |
-| Per-user rules | `user_quiz_settings` | who gets a quiz and when |
+| Level          | Where                | Role                               |
+| -------------- | -------------------- | ---------------------------------- |
+| Global wake-up | `quiz.cron` in yaml  | how often the app checks all users |
+| Per-user rules | `user_quiz_settings` | who gets a quiz and when           |
 
 ---
 
@@ -420,14 +435,14 @@ QuizScheduler.sendQuiz()
 
 Stored in `user_quiz_settings`. Created on first `UserService.getOrCreate`.
 
-| Field                 | Default           | Used by                          |
-| --------------------- | ----------------- | -------------------------------- |
-| `enabled`             | `false`           | scheduler (`findEnabled`)        |
-| `intervalHours`       | `2`               | scheduler eligibility            |
-| `windowStart` / `End` | `09:00` – `18:00` | scheduler eligibility            |
-| `timezone`            | `UTC`             | scheduler eligibility            |
-| `questionsPerLesson`  | `5`               | `/quiz`, `/help`, session `total`|
-| `lastQuizSentAt`      | `null`            | scheduler eligibility            |
+| Field                 | Default           | Used by                           |
+| --------------------- | ----------------- | --------------------------------- |
+| `enabled`             | `false`           | scheduler (`findEnabled`)         |
+| `intervalHours`       | `2`               | scheduler eligibility             |
+| `windowStart` / `End` | `09:00` – `18:00` | scheduler eligibility             |
+| `timezone`            | `UTC`             | scheduler eligibility             |
+| `questionsPerLesson`  | `5`               | `/quiz`, `/help`, session `total` |
+| `lastQuizSentAt`      | `null`            | scheduler eligibility             |
 
 See also: `docs/database.md`, `docs/challenges-jpa-user-settings.md`.
 
@@ -456,7 +471,7 @@ Write paths:
   /add, /edit     → WordService              → WordRepository
   /settings       → UserQuizSettingsService  → UserQuizSettingsRepository
   Quiz answer     → WordAttemptService       → WordAttemptRepository
-  First message   → UserService              → UserRepository + UserQuizSettingsRepository
+  /start, /help, … (first contact) → UserService.getOrCreate → UserRepository + UserQuizSettingsRepository
   Auto-quiz sent  → UserQuizSettingsService.markQuizSent → UserQuizSettingsRepository
 
 Read paths:
