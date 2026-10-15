@@ -5,6 +5,7 @@ Telegram bot for **personal vocabulary** and **poll-based quizzes**. Users maint
 ## Demo
 
 [Watch demo](https://vimeo.com/1236153988?share=copy&fl=sv&fe=ci)
+[![Demo](https://vimeo.com/1236153988?share=copy&fl=sv&fe=ci)](https://vimeo.com/1236153988?share=copy&fl=sv&fe=ci)
 
 ## Highlights
 
