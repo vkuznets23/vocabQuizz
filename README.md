@@ -83,7 +83,7 @@ export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/vocab_quiz
 ./gradlew bootRun
 ```
 
-Flyway applies migrations on startup. Open your bot in Telegram and send `/help`.
+Flyway applies migrations on startup. Open your bot in Telegram and send `/start` or `/help` after first launch.
 
 ## Run with Docker Compose (app + database)
 
