@@ -2,6 +2,10 @@
 
 Telegram bot for **personal vocabulary** and **poll-based quizzes**. Users maintain their own word lists in chat, run manual lessons with `/quiz`, or enable **scheduled auto-quizzes** (interval, daily time window, question count). Answers are stored for basic statistics.
 
+## Demo
+
+[Watch demo](https://vimeo.com/1236153988?share=copy&fl=sv&fe=ci)
+
 ## Highlights
 
 - **Developed** end-to-end bot flows: add/edit/delete words, paginated word list, lookup, stats.
