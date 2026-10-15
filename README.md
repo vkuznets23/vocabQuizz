@@ -166,9 +166,17 @@ src/main/resources/
 vocab-quizz/docs/  flow, database, JPA notes, test troubleshooting
 ```
 
-## Interview talking points
+## CI
 
-- **Why long polling:** simple deployment, no public HTTPS webhook for a side project.
-- **Settings 1:1 with users:** shared PK (`user_id`), `@OneToOne` + `@MapsId`; create settings on registration — see `vocab-quizz/docs/challenges-jpa-user-settings.md`.
-- **Quiz flow:** deck shuffle, distractors from other words, poll registration, attempts persisted on each answer — see `vocab-quizz/docs/flow.md`.
-- **Auto-quiz eligibility:** `enabled`, local time window + timezone, minimum interval since `last_quiz_sent_at`.
+Tests run automatically via [GitHub Actions](.github/workflows/test.yml):
+
+| Trigger          | When                     |
+| ---------------- | ------------------------ |
+| **push**         | Every push to any branch |
+| **pull_request** | PRs targeting **`main`** |
+
+The workflow uses **Ubuntu**, **JDK 21** (Temurin), and runs from the Gradle module:
+
+```bash
+cd vocab-quizz && ./gradlew test --no-daemon
+```
