@@ -2,10 +2,32 @@
 
 Telegram bot for **personal vocabulary** and **poll-based quizzes**. Users maintain their own word lists in chat, run manual lessons with `/quiz`, or enable **scheduled auto-quizzes** (interval, daily time window, question count). Answers are stored for basic statistics.
 
-## Demo
+## [Watch demo](https://vimeo.com/1236153988?share=copy&fl=sv&fe=ci)
 
-[Watch demo](https://vimeo.com/1236153988?share=copy&fl=sv&fe=ci)
-[![Demo](https://vimeo.com/1236153988?share=copy&fl=sv&fe=ci)](https://vimeo.com/1236153988?share=copy&fl=sv&fe=ci)
+### Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="./vocab-quizz/demo_imgs/settings.jpg" width="280" alt="Settings for scheduled quizzes" /><br />
+      <sub>Settings</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="./vocab-quizz/demo_imgs/stats.jpg" width="280" alt="Quiz statistics" /><br />
+      <sub>Statistics</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="./vocab-quizz/demo_imgs/word.jpg" width="280" alt="Word lookup" /><br />
+      <sub>Word lookup</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="./vocab-quizz/demo_imgs/words.jpg" width="280" alt="Word list" /><br />
+      <sub>Word list</sub>
+    </td>
+  </tr>
+</table>
 
 ## Highlights
 
