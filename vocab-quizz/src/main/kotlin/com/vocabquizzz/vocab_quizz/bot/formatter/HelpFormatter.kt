@@ -1,14 +1,13 @@
 package com.vocabquizzz.vocab_quizz.bot.formatter
 
-import org.springframework.stereotype.Component
 import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
+import org.springframework.stereotype.Component
 
 @Component
 class HelpFormatter {
-    fun formatHelp(questionsPerLesson: Int) = """
-        🤖 Vocab Quiz Bot
-
-        📚 Vocabulary
+    fun formatHelp(questionsPerLesson: Int) =
+            """
+        🤖 Commands list:
 
         📝 /add <word>
         Add a word. I'll ask for definition, then example (or /skip).
@@ -26,23 +25,17 @@ class HelpFormatter {
         📚 /words
         List your words (paginated). Use ⬅️ ➡️ buttons to navigate.
 
-        🧠 Quiz
-
-        /quiz
+        🧠 /quiz
         Start a quiz: $questionsPerLesson questions, different question types.
         Set the number of questions in /settings.
         You need at least ${WordConstraints.MIN_WORDS_FOR_QUIZ} words in your dictionary.
         Answer using the poll buttons Telegram sends you.
 
-        📊 Statistics
-
-        /stat
+        📊 /stat
         Your overall quiz stats (words practiced, accuracy, etc.).
 
-        /stat <word>
+        📊 /stat <word>
         Stats for a specific word.
-
-        ⚙️ Other
 
         ❌ /cancel
         Cancel current add / edit / quiz session.
@@ -50,7 +43,7 @@ class HelpFormatter {
         ❓ /help
         Show this message.
 
-        /settings
+        ⚙️/settings
         Configure auto-quiz schedule, interval, and questions per quiz.
 
         💡 Tips
