@@ -11,7 +11,7 @@ import com.vocabquizzz.vocab_quizz.service.user.UserService
 import com.vocabquizzz.vocab_quizz.service.quiz.QuizDeckService
 import com.vocabquizzz.vocab_quizz.service.quiz.LessonSessionService
 import com.vocabquizzz.vocab_quizz.service.word.WordAttemptService
-import com.vocabquizzz.vocab_quizz.model.word.WordConstraints    
+import com.vocabquizzz.vocab_quizz.service.UserQuizSettingsService
 
 
 @Service
@@ -21,6 +21,7 @@ class QuizFlowService(
     private val userService: UserService,
     private val quizDeckService: QuizDeckService,
     private val lessonSessionService: LessonSessionService,
+    private val settingsService: UserQuizSettingsService,
     private val wordAttemptService: WordAttemptService,
 ) {
 
@@ -29,7 +30,9 @@ class QuizFlowService(
             return StartQuizResult.NotEnoughWords
         }
 
-        if (!lessonSessionService.startLesson(chatId)) {
+        val questions = settingsService.getSettings(user).questionsPerLesson
+
+        if (!lessonSessionService.startLesson(chatId, questions)) {
             return StartQuizResult.AlreadyRunning
         }
 
@@ -70,7 +73,7 @@ class QuizFlowService(
             AnswerResult.Finished(
                 chatId = chatId,
                 score = session.score,
-                total = WordConstraints.QUESTIONS_PER_LESSON,
+                total = session.total,
             )
         }
     }

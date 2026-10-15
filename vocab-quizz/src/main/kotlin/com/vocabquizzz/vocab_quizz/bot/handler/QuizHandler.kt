@@ -35,12 +35,13 @@ class QuizHandler(
         }
     }
 
-    fun startLesson(chatId: String) {  // for QuizScheduler
+    fun startLesson(chatId: String): Boolean {  // for QuizScheduler
         val user = userService.getOrCreate(chatId.toLong())
         when (val result = quizFlowService.startQuiz(chatId, user)) {
             is StartQuizResult.Ready -> sendQuiz(result.chatId, result.quiz)
-            else -> return
+            else -> return false
         }
+        return true
     }
 
 

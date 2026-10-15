@@ -11,6 +11,8 @@ import com.vocabquizzz.vocab_quizz.bot.handler.DeleteWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.CancelSessionHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.EditWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.StatisticHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.SettingsCallbackHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.SettingsHandler
 import com.vocabquizzz.vocab_quizz.service.session.AddWordSessionService
 import com.vocabquizzz.vocab_quizz.service.session.EditWordSessionService
 import com.vocabquizzz.vocab_quizz.bot.gateway.TelegramGateway
@@ -34,7 +36,8 @@ class BotDispatcher(
     private val cancelSessionHandler: CancelSessionHandler,
     private val editWordHandler: EditWordHandler,
     private val allWordsCallbackHandler: AllWordsCallbackHandler,
-
+    private val settingsCallbackHandler: SettingsCallbackHandler,
+    private val settingsHandler: SettingsHandler,
 ) {
     fun dispatch(message: Message) {
 
@@ -66,6 +69,9 @@ class BotDispatcher(
             
             "/cancel" ->
                 cancelSessionHandler.handle(message)
+
+            "/settings" ->
+                settingsHandler.handle(message)
             
             else -> {
                 val chatId = message.chatId.toString()
@@ -93,6 +99,8 @@ class BotDispatcher(
         when {
             callback.data.startsWith("words:") ->
                 allWordsCallbackHandler.handle(callback)
+            callback.data.startsWith("settings:") ->
+                settingsCallbackHandler.handle(callback)
         }
     }
 }

@@ -5,7 +5,7 @@ import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
 
 @Component
 class HelpFormatter {
-    fun formatHelp() = """
+    fun formatHelp(questionsPerLesson: Int) = """
         🤖 Vocab Quiz Bot
 
         📚 Vocabulary
@@ -29,7 +29,8 @@ class HelpFormatter {
         🧠 Quiz
 
         /quiz
-        Start a quiz: ${WordConstraints.QUESTIONS_PER_LESSON} questions, different question types.
+        Start a quiz: $questionsPerLesson questions, different question types.
+        Set the number of questions in /settings.
         You need at least ${WordConstraints.MIN_WORDS_FOR_QUIZ} words in your dictionary.
         Answer using the poll buttons Telegram sends you.
 
@@ -48,6 +49,9 @@ class HelpFormatter {
 
         ❓ /help
         Show this message.
+
+        /settings
+        Configure auto-quiz schedule, interval, and questions per quiz.
 
         💡 Tips
         • Example sentences: replace the word with ___

@@ -3,7 +3,6 @@ package com.vocabquizzz.vocab_quizz.service.quiz
 import org.springframework.stereotype.Service
 import com.vocabquizzz.vocab_quizz.model.quiz.QuizSession
 import com.vocabquizzz.vocab_quizz.model.quiz.QuizType
-import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
 import com.vocabquizzz.vocab_quizz.model.quiz.ActivePoll
 
 @Service
@@ -12,13 +11,14 @@ class LessonSessionService {
     private val sessions = mutableMapOf<String, QuizSession>()
     private val activePolls = mutableMapOf<String, ActivePoll>()
 
-    fun startLesson(chatId: String, questions: Int = WordConstraints.QUESTIONS_PER_LESSON,
+    fun startLesson(chatId: String, questions: Int,
     ): Boolean {
         if (sessions.containsKey(chatId)) {
             return false
         }
 
         sessions[chatId] = QuizSession(
+            total = questions,
             remaining = questions,
             score = 0
         )
