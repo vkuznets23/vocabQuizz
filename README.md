@@ -68,6 +68,39 @@ More detail: [vocab-quizz/docs/flow.md](vocab-quizz/docs/flow.md), [vocab-quizz/
 - **Docker** (recommended) or a local PostgreSQL instance
 - A **Telegram bot token** from [@BotFather](https://t.me/BotFather) (`/newbot`)
 
+All setup commands below assume the **Gradle project root** — the `vocab-quizz/` folder (where `docker-compose.yml` and `gradlew` live). From the git repo root: `cd vocab-quizz` first.
+
+## Quick start (run the bot + first chat)
+
+**A. Create a bot (once)**
+
+1. Open [@BotFather](https://t.me/BotFather) → **`/newbot`** → pick a name and `@…_bot` username.
+2. Copy the **token** — this is your `TELEGRAM_BOT_TOKEN` (one token per bot; every user chats with the same bot, data is separated by Telegram user id in the DB).
+
+**B. Run backend locally**
+
+```bash
+cd vocab-quizz
+docker compose up -d postgres
+
+export TELEGRAM_BOT_TOKEN="your-token-from-botfather"
+export TELEGRAM_BOT_USERNAME="your_bot_username"   # optional
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/vocab_quiz
+./gradlew bootRun
+```
+
+Wait until the app finishes starting. **Flyway** applies SQL migrations automatically — you do not run them by hand.
+
+Run **only one** app instance per token (do not use `bootRun` and Docker `app` at the same time).
+
+**C. First chat in Telegram**
+
+1. Search for your bot by `@username` → tap **Start** (or send **`/start`**) — creates your user + default settings in the DB.
+2. **`/add`** — add words (guided flow). You need **at least 4 words** before **`/quiz`**.
+3. **`/quiz`** — try a lesson. **`/help`** — full command list.
+
+Optional: put `TELEGRAM_BOT_TOKEN` in `vocab-quizz/.env` for Docker Compose (file is gitignored).
+
 ## Configuration
 
 | Variable                | Required | Description                                                 |
@@ -87,30 +120,17 @@ Default `application.yaml` points the datasource at host `postgres` (Docker Comp
 
 Auto-quiz schedule: `quiz.cron` in `src/main/resources/application.yaml` (default: every hour at `:00`). Scheduler uses 6-field Spring cron.
 
+## Database & migrations
+
+- **Schema:** PostgreSQL; versioned SQL in `vocab-quizz/src/main/resources/db/migration/` (V1–V6).
+- **When:** **Flyway** runs on **application startup** (local `bootRun` or Docker app) — creates/updates tables; no separate migrate step.
+- **Users & words:** created when people use the bot (`/start` → user + settings; `/add` → words), not by migrations. Migration **V4** only inserts sample words if a matching dev user already exists — safe to replace with a no-op when you want a purely empty DB. See [database.md](vocab-quizz/docs/database.md) for tables and relationships.
+- **Empty DB for testing:** `docker compose down -v` removes the Postgres volume; next start is a clean schema (handy for testing “new user” flow).
+- **Inspect data:** `docker compose exec postgres psql -U postgres -d vocab_quiz` then `\dt` / `SELECT * FROM users;`
+
 ## Run locally (recommended for development)
 
-**1. Start PostgreSQL**
-
-```bash
-cd vocab-quizz
-docker compose up -d postgres
-```
-
-**2. Set the bot token**
-
-```bash
-export TELEGRAM_BOT_TOKEN="your-token-from-botfather"
-export TELEGRAM_BOT_USERNAME="your_bot_username"   # optional
-```
-
-**3. Run the application**
-
-```bash
-export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/vocab_quiz
-./gradlew bootRun
-```
-
-Flyway applies migrations on startup. Open your bot in Telegram and send `/start` or `/help` after first launch.
+Same as [Quick start](#quick-start-run-the-bot--first-chat) **B** — Postgres in Docker, app on the host with `SPRING_DATASOURCE_URL` pointing at `localhost:5432`.
 
 ## Run with Docker Compose (app + database)
 
