@@ -11,11 +11,13 @@ import org.springframework.data.domain.PageRequest
 import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
 import com.vocabquizzz.vocab_quizz.model.word.WordLookupResult
 import com.vocabquizzz.vocab_quizz.model.word.DeleteWordResult
+import com.vocabquizzz.vocab_quizz.service.deck.DeckService
 
 
 @Service
 class WordService(
-    private val wordRepository: WordRepository
+    private val wordRepository: WordRepository,
+    private val deckService: DeckService,
 ){
 
     // ── Private: validation & normalization ───────────
@@ -67,8 +69,10 @@ class WordService(
     fun ensureWordAvailable(user: User, word: String) {
         val normalized = word.trim()
         validateWord(normalized)
-        if (wordRepository.existsByUserAndWordIgnoreCase(user, normalized)) {
-            throw IllegalArgumentException("Word already exists")
+
+        val deck = deckService.getOrCreateGeneral(user)
+        if (wordRepository.existsByDeckAndWordIgnoreCase(deck, normalized)) {
+            throw IllegalArgumentException("Word already exists in deck")
         }
     }
 
@@ -128,12 +132,15 @@ class WordService(
         validateDefinition(normalizedDefinition)
         validateExample(normalizedExample)
 
-        if (wordRepository.existsByUserAndWordIgnoreCase(user, normalizedWord)) {
+        val deck = deckService.getOrCreateGeneral(user)
+
+        if (wordRepository.existsByDeckAndWordIgnoreCase(deck, normalizedWord)) {
             throw IllegalArgumentException("Word already exists")
         }
 
         val newWord = Word(
             user = user,
+            deck = deck,
             word = normalizedWord,
             definition = normalizedDefinition,
             example = normalizedExample
@@ -168,7 +175,7 @@ class WordService(
                 validateWord(newWord)
 
                 if (
-                    wordRepository.existsByUserAndWordIgnoreCase(user, newWord) &&
+                    wordRepository.existsByDeckAndWordIgnoreCase(word.deck, newWord) &&
                     !word.word.equals(newWord, ignoreCase = true)
                 ) {
                     throw IllegalArgumentException("Word already exists")

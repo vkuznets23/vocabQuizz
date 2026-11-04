@@ -16,6 +16,10 @@ class Word(
     @JoinColumn(name = "user_id", nullable = false)
     val user: User = User(),
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deck_id", nullable = false)
+    val deck: Deck,
+
     @Column(nullable = false, length = WordConstraints.MAX_WORD_LENGTH)
     var word: String = "",
 

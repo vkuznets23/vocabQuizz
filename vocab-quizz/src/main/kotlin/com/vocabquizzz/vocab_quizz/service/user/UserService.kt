@@ -6,24 +6,26 @@ import com.vocabquizzz.vocab_quizz.repository.UserQuizSettingsRepository
 import com.vocabquizzz.vocab_quizz.entity.UserQuizSettings
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import com.vocabquizzz.vocab_quizz.service.deck.DeckService
 
 @Service
 class UserService(
     private val repository: UserRepository,
     private val settingsRepository: UserQuizSettingsRepository,
+    private val deckService: DeckService,
 ) {
-
-    @Transactional // because several operations are needed
+    @Transactional
     fun getOrCreate(telegramUserId: Long): User {
+        val user = repository.findByTelegramUserId(telegramUserId)
+            ?: run {
+                val saved = repository.save(User(telegramUserId = telegramUserId))
+                settingsRepository.save(
+                    UserQuizSettings(user = repository.getReferenceById(saved.id))
+                )
+                saved
+            }
 
-        repository.findByTelegramUserId(telegramUserId)?.let { return it }
-
-        // create user and settings
-    
-        val user = repository.save(User(telegramUserId = telegramUserId)) // create a user with such tg id
-        settingsRepository.save(
-            UserQuizSettings(user = repository.getReferenceById(user.id))
-        )
+        deckService.getOrCreateGeneral(user)
         return user
     }
 }
