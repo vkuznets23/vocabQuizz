@@ -28,5 +28,6 @@ interface WordRepository : JpaRepository<Word, Long> {
     fun deleteByUserAndWordIgnoreCase(user: User, word: String): Long
     fun countByUser(user: User): Long
     fun existsByDeckAndWordIgnoreCase(deck: Deck, word: String): Boolean
-
+    fun findAllByDeck(deck: Deck, pageable: Pageable): Page<Word>
+    fun countByDeck(deck: Deck): Long
 }

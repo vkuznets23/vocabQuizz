@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.service.word
 import org.springframework.stereotype.Service
 import com.vocabquizzz.vocab_quizz.entity.Word
 import com.vocabquizzz.vocab_quizz.entity.User
+import com.vocabquizzz.vocab_quizz.entity.Deck
 import com.vocabquizzz.vocab_quizz.model.word.EditableField
 import com.vocabquizzz.vocab_quizz.repository.WordRepository
 import org.springframework.transaction.annotation.Transactional
@@ -104,7 +105,13 @@ class WordService(
             PageRequest.of(page, WordConstraints.MAX_WORDS_PER_PAGE)
         )
     }
-    
+
+    fun getWordsForDeck(deck: Deck, page: Int): Page<Word> =
+        wordRepository.findAllByDeck(
+            deck,
+            PageRequest.of(page, WordConstraints.MAX_WORDS_PER_PAGE),
+    )
+
     fun getAllWords(user: User): List<Word> =
         wordRepository.findAllByUser(user)
 

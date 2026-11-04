@@ -22,4 +22,13 @@ class DeckService(
         val newDeck = Deck(user = user, name = DeckDefaults.GENERAL_NAME)
         return deckRepository.save(newDeck)
     }
+
+    fun getAllDecks(user: User): List<Deck> {
+        return deckRepository.findAllByUserIdOrderByName(user.id)
+    }
+
+    fun getByNameForUser(user: User, name: String): Deck? {
+        return deckRepository.findByUserAndNameIgnoreCase(user, name)
+    }
+
 }
