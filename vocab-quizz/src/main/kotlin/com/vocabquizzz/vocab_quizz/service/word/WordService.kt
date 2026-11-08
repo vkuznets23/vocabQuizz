@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.service.word
 import org.springframework.stereotype.Service
 import com.vocabquizzz.vocab_quizz.entity.Word
 import com.vocabquizzz.vocab_quizz.entity.User
+import com.vocabquizzz.vocab_quizz.entity.Deck
 import com.vocabquizzz.vocab_quizz.model.word.EditableField
 import com.vocabquizzz.vocab_quizz.repository.WordRepository
 import org.springframework.transaction.annotation.Transactional
@@ -11,11 +12,13 @@ import org.springframework.data.domain.PageRequest
 import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
 import com.vocabquizzz.vocab_quizz.model.word.WordLookupResult
 import com.vocabquizzz.vocab_quizz.model.word.DeleteWordResult
+import com.vocabquizzz.vocab_quizz.service.deck.DeckService
 
 
 @Service
 class WordService(
-    private val wordRepository: WordRepository
+    private val wordRepository: WordRepository,
+    private val deckService: DeckService,
 ){
 
     // ── Private: validation & normalization ───────────
@@ -64,11 +67,22 @@ class WordService(
         validateExample(raw?.trim()?.takeIf { it.isNotBlank() })
     }
 
-    fun ensureWordAvailable(user: User, word: String) {
+    // fun ensureWordAvailable(user: User, word: String) {
+    //     val normalized = word.trim()
+    //     validateWord(normalized)
+
+    //     val deck = deckService.getOrCreateGeneral(user)
+    //     if (wordRepository.existsByDeckAndWordIgnoreCase(deck, normalized)) {
+    //         throw IllegalArgumentException("Word already exists in deck")
+    //     }
+    // }
+
+    fun ensureWordAvailable(user: User, deck: Deck, word: String) {
         val normalized = word.trim()
         validateWord(normalized)
-        if (wordRepository.existsByUserAndWordIgnoreCase(user, normalized)) {
-            throw IllegalArgumentException("Word already exists")
+    
+        if (wordRepository.existsByDeckAndWordIgnoreCase(deck, normalized)) {
+            throw IllegalArgumentException("Word already exists in deck «${deck.name}»")
         }
     }
 
@@ -100,7 +114,13 @@ class WordService(
             PageRequest.of(page, WordConstraints.MAX_WORDS_PER_PAGE)
         )
     }
-    
+
+    fun getWordsForDeck(deck: Deck, page: Int): Page<Word> =
+        wordRepository.findAllByDeck(
+            deck,
+            PageRequest.of(page, WordConstraints.MAX_WORDS_PER_PAGE),
+    )
+
     fun getAllWords(user: User): List<Word> =
         wordRepository.findAllByUser(user)
 
@@ -115,9 +135,10 @@ class WordService(
     @Transactional
     fun addWord(
         user: User,
+        deck: Deck,
         word: String,
         definition: String,
-        example: String?
+        example: String?,
     ): Word {
         val normalizedWord = word.trim()
         val normalizedDefinition = definition.trim()
@@ -128,12 +149,13 @@ class WordService(
         validateDefinition(normalizedDefinition)
         validateExample(normalizedExample)
 
-        if (wordRepository.existsByUserAndWordIgnoreCase(user, normalizedWord)) {
+        if (wordRepository.existsByDeckAndWordIgnoreCase(deck, normalizedWord)) {
             throw IllegalArgumentException("Word already exists")
         }
 
         val newWord = Word(
             user = user,
+            deck = deck,
             word = normalizedWord,
             definition = normalizedDefinition,
             example = normalizedExample
@@ -168,7 +190,7 @@ class WordService(
                 validateWord(newWord)
 
                 if (
-                    wordRepository.existsByUserAndWordIgnoreCase(user, newWord) &&
+                    wordRepository.existsByDeckAndWordIgnoreCase(word.deck, newWord) &&
                     !word.word.equals(newWord, ignoreCase = true)
                 ) {
                     throw IllegalArgumentException("Word already exists")
@@ -199,4 +221,6 @@ class WordService(
         return if (suggestions.isEmpty()) WordLookupResult.NotFound
            else WordLookupResult.Suggestions(normalized, suggestions)
     }
+
+
 }

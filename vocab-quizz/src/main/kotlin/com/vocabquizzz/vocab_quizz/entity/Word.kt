@@ -3,6 +3,7 @@ package com.vocabquizzz.vocab_quizz.entity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
+import com.vocabquizzz.vocab_quizz.model.deck.DeckDefaults
 
 @Entity
 @Table(name = "words")
@@ -16,6 +17,10 @@ class Word(
     @JoinColumn(name = "user_id", nullable = false)
     val user: User = User(),
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deck_id", nullable = false)
+    val deck: Deck = Deck(user = User(), name = DeckDefaults.GENERAL_NAME),
+
     @Column(nullable = false, length = WordConstraints.MAX_WORD_LENGTH)
     var word: String = "",
 
@@ -27,4 +32,4 @@ class Word(
 
     @Column(name = "created_at", insertable = false, updatable = false)
     val createdAt: LocalDateTime? = null
-)
+) 

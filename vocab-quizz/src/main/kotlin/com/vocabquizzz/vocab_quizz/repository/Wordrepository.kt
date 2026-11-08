@@ -5,6 +5,8 @@ import com.vocabquizzz.vocab_quizz.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import com.vocabquizzz.vocab_quizz.entity.Deck
+
 
 
 interface WordRepository : JpaRepository<Word, Long> {
@@ -25,4 +27,7 @@ interface WordRepository : JpaRepository<Word, Long> {
     ): Boolean
     fun deleteByUserAndWordIgnoreCase(user: User, word: String): Long
     fun countByUser(user: User): Long
+    fun existsByDeckAndWordIgnoreCase(deck: Deck, word: String): Boolean
+    fun findAllByDeck(deck: Deck, pageable: Pageable): Page<Word>
+    fun countByDeck(deck: Deck): Long
 }

@@ -1,6 +1,6 @@
 # Vocab Quiz — Telegram vocabulary bot
 
-Telegram bot for **personal vocabulary** and **poll-based quizzes**. Users maintain their own word lists in chat, run manual lessons with `/quiz`, or enable **scheduled auto-quizzes** (interval, daily time window, question count). Answers are stored for basic statistics.
+Telegram bot for **personal vocabulary** and **poll-based quizzes**. Words live in **decks** (topics or languages); each user gets a default **General** deck. Users maintain lists in chat, run manual lessons with `/quiz`, or enable **scheduled auto-quizzes** (interval, daily time window, question count). Answers are stored for basic statistics.
 
 ## [Watch demo](https://vimeo.com/1236153988?share=copy&fl=sv&fe=ci)
 
@@ -31,8 +31,8 @@ Telegram bot for **personal vocabulary** and **poll-based quizzes**. Users maint
 
 ## Highlights
 
-- **Developed** end-to-end bot flows: add/edit/delete words, paginated word list, lookup, stats.
-- **Designed** PostgreSQL schema with **Flyway** migrations; **JPA** entities for users, words, attempts, and per-user quiz settings (1:1).
+- **Developed** end-to-end bot flows: decks, add/edit/delete words, paginated word list, lookup, stats.
+- **Designed** PostgreSQL schema with **Flyway** migrations; **JPA** entities for users, **decks**, words, attempts, and per-user quiz settings (1:1).
 - **Implemented** quiz engine with distractors, in-memory **multi-step sessions** (add/edit/quiz), and a **cron scheduler** for eligibility-based auto-lessons.
 - **Stack:** Kotlin, Java 21, Spring Boot 3, Telegram Bots API (long polling), PostgreSQL, Docker Compose.
 
@@ -58,7 +58,9 @@ Telegram → TelegramBot → BotDispatcher → Handlers
 QuizScheduler (@Scheduled) → enabled users → QuizHandler (same flow as /quiz)
 ```
 
-Session state for `/add`, `/edit`, and active quizzes lives in memory (single-instance bot). Persistent data: users, words, attempts, settings.
+Session state for `/add`, `/edit`, and active quizzes lives in memory (single-instance bot). Persistent data: users, decks, words (per deck), attempts, settings.
+
+**Decks:** each user has one or more named decks; **General** is the default and cannot be deleted. The same word text may exist in different decks, but not twice in the same deck (unique per `deck_id`). `/quiz` currently uses **all words across all decks** for that user.
 
 More detail: [vocab-quizz/docs/flow.md](vocab-quizz/docs/flow.md), [vocab-quizz/docs/database.md](vocab-quizz/docs/database.md), [vocab-quizz/docs/challenges-jpa-user-settings.md](vocab-quizz/docs/challenges-jpa-user-settings.md)
 
@@ -96,8 +98,9 @@ Run **only one** app instance per token (do not use `bootRun` and Docker `app` a
 **C. First chat in Telegram**
 
 1. Search for your bot by `@username` → tap **Start** (or send **`/start`**) — creates your user + default settings in the DB.
-2. **`/add`** — add words (guided flow). You need **at least 4 words** before **`/quiz`**.
-3. **`/quiz`** — try a lesson. **`/help`** — full command list.
+2. Optional: **`/newdeck Travel`** — create a deck; **`/decks`** — list your decks (includes **General** once you have decks or add a word).
+3. **`/add apple`** — guided flow: definition → example (`/skip` for none) → deck name (`/skip` for **General**). You need **at least 4 words** (any decks) before **`/quiz`**.
+4. **`/quiz`** — try a lesson. **`/help`** — command list (deck commands may not appear there yet).
 
 Optional: put `TELEGRAM_BOT_TOKEN` in `vocab-quizz/.env` for Docker Compose (file is gitignored).
 
@@ -122,9 +125,9 @@ Auto-quiz schedule: `quiz.cron` in `src/main/resources/application.yaml` (defaul
 
 ## Database & migrations
 
-- **Schema:** PostgreSQL; versioned SQL in `vocab-quizz/src/main/resources/db/migration/` (V1–V6).
+- **Schema:** PostgreSQL; versioned SQL in `vocab-quizz/src/main/resources/db/migration/` (V1–V7).
 - **When:** **Flyway** runs on **application startup** (local `bootRun` or Docker app) — creates/updates tables; no separate migrate step.
-- **Users & words:** created when people use the bot (`/start` → user + settings; `/add` → words), not by migrations. Migration **V4** only inserts sample words if a matching dev user already exists — safe to replace with a no-op when you want a purely empty DB. See [database.md](vocab-quizz/docs/database.md) for tables and relationships.
+- **Users, decks & words:** created when people use the bot (`/start` → user + settings; decks and words via `/newdeck`, `/add`, etc.), not by migrations. **V4** adds `decks`; **V7** adds `words.deck_id` and unique `(deck_id, lower(word))`. See [database.md](vocab-quizz/docs/database.md) for tables (note: doc may lag behind migrations).
 - **Empty DB for testing:** `docker compose down -v` removes the Postgres volume; next start is a clean schema (handy for testing “new user” flow).
 - **Inspect data:** `docker compose exec postgres psql -U postgres -d vocab_quiz` then `\dt` / `SELECT * FROM users;`
 
@@ -147,19 +150,23 @@ Stop: `docker compose down`.
 
 ## Bot commands
 
-| Command     | Description                                     |
-| ----------- | ----------------------------------------------- |
-| `/start`    | Welcome text                                    |
-| `/help`     | Command list and your question count per lesson |
-| `/add`      | Add a word (guided multi-step flow)             |
-| `/edit`     | Edit an existing word                           |
-| `/delete`   | Delete a word                                   |
-| `/word`     | Look up one word                                |
-| `/words`    | Paginated list of your words                    |
-| `/quiz`     | Start a poll-based lesson                       |
-| `/settings` | Auto-quiz and lesson preferences                |
-| `/stat`     | Statistics for a word                           |
-| `/cancel`   | Cancel active add/edit/quiz session             |
+| Command              | Description                                                       |
+| -------------------- | ----------------------------------------------------------------- |
+| `/start`             | Welcome text                                                      |
+| `/help`              | Command list and your question count per lesson                   |
+| `/decks`             | List your decks (ensures **General** exists if the list was empty) |
+| `/newdeck <name>`    | Create a deck (name unique per user, case-insensitive)            |
+| `/deletedeck <name>` | Delete a deck and its words (**General** cannot be deleted)       |
+| `/add <word>`        | Add a word: definition → example (`/skip`) → deck (`/skip` = General) |
+| `/edit <word>`       | Edit an existing word                                             |
+| `/delete <word>`     | Delete a word (across user vocabulary)                            |
+| `/word <word>`       | Look up one word                                                  |
+| `/words`             | Paginated list of all your words                                  |
+| `/words <deck>`      | Paginated list for one deck (pagination buttons = all-words mode) |
+| `/quiz`              | Start a poll-based lesson (all decks)                             |
+| `/settings`          | Auto-quiz and lesson preferences                                  |
+| `/stat`              | Statistics (overall or `/stat <word>`)                              |
+| `/cancel`            | Cancel active add/edit/quiz session                               |
 
 You need at least **4 words** before `/quiz` works. Question count per lesson comes from settings (default 5, range 5–10).
 
@@ -191,7 +198,7 @@ Use backticks on `` `when` `` because `when` is a Kotlin keyword. `verify(...)` 
 | Test class                   | What it checks                                  |
 | ---------------------------- | ----------------------------------------------- |
 | `VocabQuizzApplicationTests` | Spring context loads                            |
-| `WordServiceTest`            | Words: validation, CRUD, lookup                 |
+| `WordServiceTest`            | Words (per deck): validation, CRUD, lookup      |
 | `QuizServiceTest`            | Quiz generation (options, types)                |
 | `QuizFlowServiceTest`        | Start/finish quiz flow, attempts, settings mock |
 | `StatisticServiceTest`       | User and per-word stats                         |
@@ -203,14 +210,14 @@ Use backticks on `` `when` `` because `when` is a Kotlin keyword. `verify(...)` 
 ```
 src/main/kotlin/.../
   bot/          handlers, formatters, gateway, scheduler, dispatcher
-  service/      business logic (words, quiz flow, settings, stats, sessions)
+  service/      business logic (decks, words, quiz flow, settings, stats, sessions)
   repository/   Spring Data JPA
   entity/       JPA models
   model/        DTOs, session state, quiz types
   config/       Telegram client, Jackson
 src/main/resources/
   application.yaml
-  db/migration/ Flyway SQL (V1–V6)
+  db/migration/ Flyway SQL (V1–V7)
 vocab-quizz/docs/  flow, database, JPA notes, test troubleshooting
 ```
 
