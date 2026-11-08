@@ -1,7 +1,9 @@
 package com.vocabquizzz.vocab_quizz.service.word
 
+import com.vocabquizzz.vocab_quizz.entity.Deck
 import com.vocabquizzz.vocab_quizz.entity.User
 import com.vocabquizzz.vocab_quizz.entity.Word
+import com.vocabquizzz.vocab_quizz.service.deck.DeckService
 import com.vocabquizzz.vocab_quizz.model.word.DeleteWordResult
 import com.vocabquizzz.vocab_quizz.model.word.EditableField
 import com.vocabquizzz.vocab_quizz.model.word.WordConstraints
@@ -18,8 +20,10 @@ import org.mockito.Mockito.`when`
 
 class WordServiceTest {
     private val wordRepository: WordRepository = mock()
-    private val wordService = WordService(wordRepository)
+    private val deckService: DeckService = mock()
+    private val wordService = WordService(wordRepository, deckService)
     private val user = User(id = 1, telegramUserId = 123)
+    private val deck = Deck(id = 1, user = user, name = "General")
 
     @Test
     fun `hasEnoughWordsForQuiz returns false when below minimum`() {
@@ -43,20 +47,21 @@ class WordServiceTest {
 
     @Test
     fun `addWord saves normalized word`() {
-        `when`(wordRepository.existsByUserAndWordIgnoreCase(user, "apple")).thenReturn(false)
+        `when`(wordRepository.existsByDeckAndWordIgnoreCase(deck, "apple")).thenReturn(false)
         `when`(wordRepository.save(any<Word>()))
                 .thenAnswer { (it.arguments[0] as Word) }
                 .thenReturn(
                         Word(
                                 id = 1,
                                 user = user,
+                                deck = deck,
                                 word = "apple",
                                 definition = "a fruit",
                                 example = null
                         )
                 )
 
-        val saved = wordService.addWord(user, "  apple  ", "  a fruit  ", "  ")
+        val saved = wordService.addWord(user, deck, "  apple  ", "  a fruit  ", "  ")
         assertEquals("apple", saved.word)
         assertEquals("a fruit", saved.definition)
         assertEquals(null, saved.example)
@@ -68,6 +73,7 @@ class WordServiceTest {
                 assertThrows<IllegalArgumentException> {
                     wordService.addWord(
                             user,
+                            deck,
                             "a".repeat(WordConstraints.MAX_WORD_LENGTH + 1),
                             "a fruit",
                             null
@@ -85,6 +91,7 @@ class WordServiceTest {
                 assertThrows<IllegalArgumentException> {
                     wordService.addWord(
                             user,
+                            deck,
                             "app",
                             "a fruit".repeat(WordConstraints.MAX_DEFINITION_LENGTH + 1),
                             null
@@ -102,6 +109,7 @@ class WordServiceTest {
                 assertThrows<IllegalArgumentException> {
                     wordService.addWord(
                             user,
+                            deck,
                             "app",
                             "a fruit",
                             "e".repeat(WordConstraints.MAX_EXAMPLE_LENGTH + 1)
@@ -117,7 +125,7 @@ class WordServiceTest {
     fun `addWord throws when word is empty`() {
         val error =
                 assertThrows<IllegalArgumentException> {
-                    wordService.addWord(user, "", "a fruit", null)
+                    wordService.addWord(user, deck, "", "a fruit", null)
                 }
         assertEquals("Word cannot be empty.", error.message)
     }
@@ -126,18 +134,18 @@ class WordServiceTest {
     fun `addWord throws when definition is empty`() {
         val error =
                 assertThrows<IllegalArgumentException> {
-                    wordService.addWord(user, "app", "", null)
+                    wordService.addWord(user, deck, "app", "", null)
                 }
         assertEquals("Definition cannot be empty.", error.message)
     }
 
     @Test
     fun `addWord throws when word already exists`() {
-        `when`(wordRepository.existsByUserAndWordIgnoreCase(user, "apple")).thenReturn(true)
+        `when`(wordRepository.existsByDeckAndWordIgnoreCase(deck, "apple")).thenReturn(true)
 
         val error =
                 assertThrows<IllegalArgumentException> {
-                    wordService.addWord(user, "apple", "a fruit", null)
+                    wordService.addWord(user, deck, "apple", "a fruit", null)
                 }
 
         assertEquals("Word already exists", error.message)
@@ -183,6 +191,7 @@ class WordServiceTest {
             Word(
                     id = 1,
                     user = user,
+                    deck = deck,
                     word = "apple",
                     definition = "a fruit",
                     example = "I like apple"
@@ -224,7 +233,7 @@ class WordServiceTest {
     fun `updateWord throws when renaming to existing word`() {
         val word = existingWord()
         `when`(wordRepository.findByIdAndUser(1, user)).thenReturn(word)
-        `when`(wordRepository.existsByUserAndWordIgnoreCase(user, "banana")).thenReturn(true)
+        `when`(wordRepository.existsByDeckAndWordIgnoreCase(deck, "banana")).thenReturn(true)
 
         val error =
                 assertThrows<IllegalArgumentException> {
@@ -235,25 +244,25 @@ class WordServiceTest {
 
     @Test
     fun `ensureWordAvailable passes when word is free`() {
-        `when`(wordRepository.existsByUserAndWordIgnoreCase(user, "apple")).thenReturn(false)
+        `when`(wordRepository.existsByDeckAndWordIgnoreCase(deck, "apple")).thenReturn(false)
 
-        wordService.ensureWordAvailable(user, "apple")
+        wordService.ensureWordAvailable(user, deck, "apple")
     }
 
     @Test
     fun `ensureWordAvailable throws when word already exists`() {
-        `when`(wordRepository.existsByUserAndWordIgnoreCase(user, "apple")).thenReturn(true)
+        `when`(wordRepository.existsByDeckAndWordIgnoreCase(deck, "apple")).thenReturn(true)
 
         val error =
                 assertThrows<IllegalArgumentException> {
-                    wordService.ensureWordAvailable(user, "apple")
+                    wordService.ensureWordAvailable(user, deck, "apple")
                 }
-        assertEquals("Word already exists", error.message)
+        assertEquals("Word already exists in deck «General»", error.message)
     }
 
     @Test
     fun `lookupWord returns Found for exact match`() {
-        val word = Word(id = 1, user = user, word = "apple", definition = "a fruit")
+        val word = Word(id = 1, user = user, deck = deck, word = "apple", definition = "a fruit")
 
         `when`(wordRepository.findByUserAndWordIgnoreCase(user, "apple")).thenReturn(word)
 
@@ -266,7 +275,7 @@ class WordServiceTest {
     fun `lookupWord returns Suggestions when no exact match`() {
         val suggestions =
                 listOf(
-                        Word(id = 1, user = user, word = "apple", definition = "a fruit"),
+                        Word(id = 1, user = user, deck = deck, word = "apple", definition = "a fruit"),
                 )
         `when`(wordRepository.findByUserAndWordIgnoreCase(user, "app")).thenReturn(null)
         `when`(wordRepository.findTop5ByUserAndWordContainingIgnoreCase(user, "app"))
