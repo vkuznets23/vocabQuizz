@@ -67,13 +67,22 @@ class WordService(
         validateExample(raw?.trim()?.takeIf { it.isNotBlank() })
     }
 
-    fun ensureWordAvailable(user: User, word: String) {
+    // fun ensureWordAvailable(user: User, word: String) {
+    //     val normalized = word.trim()
+    //     validateWord(normalized)
+
+    //     val deck = deckService.getOrCreateGeneral(user)
+    //     if (wordRepository.existsByDeckAndWordIgnoreCase(deck, normalized)) {
+    //         throw IllegalArgumentException("Word already exists in deck")
+    //     }
+    // }
+
+    fun ensureWordAvailable(user: User, deck: Deck, word: String) {
         val normalized = word.trim()
         validateWord(normalized)
-
-        val deck = deckService.getOrCreateGeneral(user)
+    
         if (wordRepository.existsByDeckAndWordIgnoreCase(deck, normalized)) {
-            throw IllegalArgumentException("Word already exists in deck")
+            throw IllegalArgumentException("Word already exists in deck «${deck.name}»")
         }
     }
 
@@ -126,9 +135,10 @@ class WordService(
     @Transactional
     fun addWord(
         user: User,
+        deck: Deck,
         word: String,
         definition: String,
-        example: String?
+        example: String?,
     ): Word {
         val normalizedWord = word.trim()
         val normalizedDefinition = definition.trim()
@@ -138,8 +148,6 @@ class WordService(
         validateWord(normalizedWord)
         validateDefinition(normalizedDefinition)
         validateExample(normalizedExample)
-
-        val deck = deckService.getOrCreateGeneral(user)
 
         if (wordRepository.existsByDeckAndWordIgnoreCase(deck, normalizedWord)) {
             throw IllegalArgumentException("Word already exists")
@@ -213,4 +221,6 @@ class WordService(
         return if (suggestions.isEmpty()) WordLookupResult.NotFound
            else WordLookupResult.Suggestions(normalized, suggestions)
     }
+
+
 }
