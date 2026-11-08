@@ -56,7 +56,6 @@ class AddWordHandler(
         }
 
         sendValidationError(chatId) {
-            // wordService.ensureWordAvailable(user, word)
             wordService.validateWordInput(word)
 
             if (sessionService.start(chatId)) {

@@ -23,6 +23,8 @@ import com.vocabquizzz.vocab_quizz.bot.handler.DeleteDeckHandler
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
+import com.vocabquizzz.vocab_quizz.bot.handler.RenameDeckHandler
+import com.vocabquizzz.vocab_quizz.service.session.RenameDeckSessionService
 
 @Component
 class BotDispatcher(
@@ -45,6 +47,8 @@ class BotDispatcher(
         private val deckHandler: DeckHandler,
         private val newDeckHandler: NewDeckHandler,
         private val deleteDeckHandler: DeleteDeckHandler,
+        private val renameDeckHandler: RenameDeckHandler,
+        private val renameDeckSessionService: RenameDeckSessionService,
 ) {
     fun dispatch(message: Message) {
 
@@ -52,6 +56,8 @@ class BotDispatcher(
             "/decks" -> deckHandler.handle(message)
             "/newdeck" -> newDeckHandler.handle(message)
             "/deletedeck" -> deleteDeckHandler.handle(message)
+            "/renamedeck" -> renameDeckHandler.start(message)
+
 
             "/start" -> startHandler.handle(message)
             "/help" -> helpHandler.handle(message)
@@ -71,6 +77,8 @@ class BotDispatcher(
                     addWordHandler.handle(message)
                 } else if (editWordSessionService.isRunning(chatId)) {
                     editWordHandler.handle(message)
+                } else if (renameDeckSessionService.isRunning(chatId)) {
+                    renameDeckHandler.handle(message)
                 } else {
                     telegramGateway.sendText(chatId, "Unknown command")
                 }

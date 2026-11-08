@@ -16,7 +16,14 @@ class DeckService(
         private const val MAX_NAME_LENGTH = 100
     }
 
-    private fun validateDeckName(rawName: String): String {
+    
+    private fun requireNotGeneral(name: String) {
+        require(!name.equals(DeckDefaults.GENERAL_NAME, ignoreCase = true)) {
+            "Cannot delete the default deck."
+        }
+    }
+    
+    fun validateDeckName(rawName: String): String {
         val name = rawName.trim()
         require(name.isNotBlank()) { "Deck name cannot be empty." }
         require(name.length <= MAX_NAME_LENGTH) {
@@ -24,13 +31,7 @@ class DeckService(
         }
         return name
     }
-
-    private fun requireNotGeneral(name: String) {
-        require(!name.equals(DeckDefaults.GENERAL_NAME, ignoreCase = true)) {
-        "Cannot delete the default deck."
-        }
-    }
-
+    
     @Transactional
     fun getOrCreateGeneral(user: User): Deck {
         deckRepository.findByUserAndNameIgnoreCase(user, DeckDefaults.GENERAL_NAME)?.let { return it }
