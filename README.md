@@ -58,9 +58,9 @@ Telegram → TelegramBot → BotDispatcher → Handlers
 QuizScheduler (@Scheduled) → enabled users → QuizHandler (same flow as /quiz)
 ```
 
-Session state for `/add`, `/edit`, and active quizzes lives in memory (single-instance bot). Persistent data: users, decks, words (per deck), attempts, settings.
+Session state for `/add`, `/edit`, `/renamedeck`, and active quizzes lives in memory (single-instance bot). Persistent data: users, decks, words (per deck), attempts, settings.
 
-**Decks:** each user has one or more named decks; **General** is the default and cannot be deleted. The same word text may exist in different decks, but not twice in the same deck (unique per `deck_id`). `/quiz` currently uses **all words across all decks** for that user.
+**Decks:** each user has one or more named decks; **General** is the default and cannot be deleted or renamed. The same word text may exist in different decks, but not twice in the same deck (unique per `deck_id`). `/quiz` currently uses **all words across all decks** for that user.
 
 More detail: [vocab-quizz/docs/flow.md](vocab-quizz/docs/flow.md), [vocab-quizz/docs/database.md](vocab-quizz/docs/database.md), [vocab-quizz/docs/challenges-jpa-user-settings.md](vocab-quizz/docs/challenges-jpa-user-settings.md)
 
@@ -100,7 +100,7 @@ Run **only one** app instance per token (do not use `bootRun` and Docker `app` a
 1. Search for your bot by `@username` → tap **Start** (or send **`/start`**) — creates your user + default settings in the DB.
 2. Optional: **`/newdeck Travel`** — create a deck; **`/decks`** — list your decks (includes **General** once you have decks or add a word).
 3. **`/add apple`** — guided flow: definition → example (`/skip` for none) → deck name (`/skip` for **General**). You need **at least 4 words** (any decks) before **`/quiz`**.
-4. **`/quiz`** — try a lesson. **`/help`** — command list (deck commands may not appear there yet).
+4. **`/quiz`** — try a lesson. **`/help`** — command list (deck commands: see table below).
 
 Optional: put `TELEGRAM_BOT_TOKEN` in `vocab-quizz/.env` for Docker Compose (file is gitignored).
 
@@ -157,6 +157,7 @@ Stop: `docker compose down`.
 | `/decks`             | List your decks (ensures **General** exists if the list was empty) |
 | `/newdeck <name>`    | Create a deck (name unique per user, case-insensitive)            |
 | `/deletedeck <name>` | Delete a deck and its words (**General** cannot be deleted)       |
+| `/renamedeck <old>`  | Rename a deck: enter new name on the next message (**General** cannot be renamed) |
 | `/add <word>`        | Add a word: definition → example (`/skip`) → deck (`/skip` = General) |
 | `/edit <word>`       | Edit an existing word                                             |
 | `/delete <word>`     | Delete a word (across user vocabulary)                            |
@@ -166,7 +167,7 @@ Stop: `docker compose down`.
 | `/quiz`              | Start a poll-based lesson (all decks)                             |
 | `/settings`          | Auto-quiz and lesson preferences                                  |
 | `/stat`              | Statistics (overall or `/stat <word>`)                              |
-| `/cancel`            | Cancel active add/edit/quiz session                               |
+| `/cancel`            | Cancel active add/edit/rename-deck/quiz session                   |
 
 You need at least **4 words** before `/quiz` works. Question count per lesson comes from settings (default 5, range 5–10).
 
