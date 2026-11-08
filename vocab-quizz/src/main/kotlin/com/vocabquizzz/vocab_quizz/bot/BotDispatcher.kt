@@ -19,6 +19,7 @@ import com.vocabquizzz.vocab_quizz.bot.handler.StatisticHandler
 import com.vocabquizzz.vocab_quizz.service.session.AddWordSessionService
 import com.vocabquizzz.vocab_quizz.service.session.EditWordSessionService
 import org.springframework.stereotype.Component
+import com.vocabquizzz.vocab_quizz.bot.handler.DeleteDeckHandler
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer
@@ -43,12 +44,14 @@ class BotDispatcher(
         private val startHandler: StartHandler,
         private val deckHandler: DeckHandler,
         private val newDeckHandler: NewDeckHandler,
+        private val deleteDeckHandler: DeleteDeckHandler,
 ) {
     fun dispatch(message: Message) {
 
         when (message.text?.substringBefore(" ")) {
             "/decks" -> deckHandler.handle(message)
             "/newdeck" -> newDeckHandler.handle(message)
+            "/deletedeck" -> deleteDeckHandler.handle(message)
 
             "/start" -> startHandler.handle(message)
             "/help" -> helpHandler.handle(message)
