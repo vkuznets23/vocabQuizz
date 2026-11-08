@@ -10,6 +10,7 @@ import com.vocabquizzz.vocab_quizz.bot.handler.DeleteWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.EditWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.GetWordHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.HelpHandler
+import com.vocabquizzz.vocab_quizz.bot.handler.NewDeckHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.QuizHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.SettingsCallbackHandler
 import com.vocabquizzz.vocab_quizz.bot.handler.SettingsHandler
@@ -41,11 +42,13 @@ class BotDispatcher(
         private val settingsHandler: SettingsHandler,
         private val startHandler: StartHandler,
         private val deckHandler: DeckHandler,
+        private val newDeckHandler: NewDeckHandler,
 ) {
     fun dispatch(message: Message) {
 
         when (message.text?.substringBefore(" ")) {
             "/decks" -> deckHandler.handle(message)
+            "/newdeck" -> newDeckHandler.handle(message)
 
             "/start" -> startHandler.handle(message)
             "/help" -> helpHandler.handle(message)

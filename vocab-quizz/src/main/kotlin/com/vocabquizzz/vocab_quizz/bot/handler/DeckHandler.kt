@@ -25,7 +25,6 @@ class DeckHandler(
             decks = deckService.getAllDecks(user)
         }
 
-
         telegramGateway.sendText(chatId, deckFormatter.formatDecks(decks))
     }
 }
